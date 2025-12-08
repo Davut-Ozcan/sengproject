@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writing Assessment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .topic-card-enhanced {
+            background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 24px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .topic-card-enhanced:hover {
+            transform: translateY(-10px);
+            border-color: var(--green);
+            box-shadow: 0 15px 35px -5px rgba(5, 150, 105, 0.25);
+        }
+
+        .topic-card-enhanced:hover .card-icon-circle {
+            background: var(--green);
+            color: white;
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .topic-card-enhanced:hover .select-link {
+            color: var(--green);
+            transform: translateX(5px);
+        }
+
+        .card-icon-circle {
+            width: 60px;
+            height: 60px;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            transition: 0.3s;
+        }
+
+        .topic-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .topic-desc {
+            font-size: 0.95rem;
+            color: var(--text-medium);
+            line-height: 1.6;
+            margin-bottom: 25px;
+            flex-grow: 1;
+        }
+
+        .select-link {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            margin-top: auto;
+        }
+
+        .instruction-box {
+            background: #f0fdf4;
+            border: 1px solid #dcfce7;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        .instruction-box h4 {
+            color: #166534;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .instruction-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .instruction-list li {
+            font-size: 0.9rem;
+            color: #15803d;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: start;
+            gap: 8px;
+        }
+
+        .editor-container {
+            height: 600px;
+        }
+
+        .split-container {
+            grid-template-columns: 380px 1fr !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="glass-nav">
+        <div class="nav-content">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fa-solid fa-shapes"></i></div>
+                <span>Virtua<span class="gradient-text">Test</span></span>
+            </div>
+
+            <div class="user-area">
+                <div class="user-details">
+                    <span class="u-name">Ysnm</span>
+                    <span class="u-role">Student</span>
+                </div>
+                <img src="https://ui-avatars.com/api/?name=Ysnm&background=059669&color=fff" alt="Profile">
+            </div>
+        </div>
+    </nav>
+
+    <main class="app-container">
+        <section id="writing">
+            <div class="module-frame">
+                <div class="frame-header header-green">
+                    <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+                    <h2>Writing Assessment</h2>
+                    <div class="timer t-green"><i class="fa-regular fa-clock"></i> 40:00</div>
+                </div>
+
+                <div id="step-select" class="step-wrapper">
+                    <div style="text-align: center; margin-bottom: 50px;">
+                        <h3 class="step-title" style="margin-bottom: 10px;">Select Your Essay Topic</h3>
+                        <p class="step-desc">Choose the topic that best matches your interests and vocabulary.</p>
+                    </div>
+
+                    <div class="topic-grid-3">
+
+                        <div class="topic-card-enhanced" onclick="selectTopic('Global Tourism')">
+                            <div class="card-icon-circle">
+                                <i class="fa-solid fa-plane-departure"></i>
+                            </div>
+                            <span class="tag t-bg-green" style="margin-bottom: 10px;">Topic 1</span>
+                            <h4 class="topic-title">Global Tourism</h4>
+                            <p class="topic-desc">Does tourism do more harm than good to local communities? Discuss pros
+                                and cons.</p>
+                            <div class="select-link">Select Topic <i class="fa-solid fa-arrow-right"></i></div>
+                        </div>
+
+                        <div class="topic-card-enhanced" onclick="selectTopic('Education System')">
+                            <div class="card-icon-circle">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                            </div>
+                            <span class="tag t-bg-green" style="margin-bottom: 10px;">Topic 2</span>
+                            <h4 class="topic-title">Education System</h4>
+                            <p class="topic-desc">Is a university degree essential for success in 2025? Analyze current
+                                trends.</p>
+                            <div class="select-link">Select Topic <i class="fa-solid fa-arrow-right"></i></div>
+                        </div>
+
+                        <div class="topic-card-enhanced" onclick="selectTopic('Remote Work')">
+                            <div class="card-icon-circle">
+                                <i class="fa-solid fa-laptop-house"></i>
+                            </div>
+                            <span class="tag t-bg-green" style="margin-bottom: 10px;">Topic 3</span>
+                            <h4 class="topic-title">Remote Work</h4>
+                            <p class="topic-desc">Analyze the long-term effects of working from home on mental health.
+                            </p>
+                            <div class="select-link">Select Topic <i class="fa-solid fa-arrow-right"></i></div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div id="step-editor" class="step-wrapper hidden" style="padding: 0;">
+                    <div class="split-container editor-container">
+
+                        <div class="pane-left" style="background: white; border-right: 2px solid #f0fdf4;">
+                            <div style="margin-bottom: 30px;">
+                                <span class="tag t-bg-green">Selected Topic</span>
+                                <h2 id="display-topic-title" style="font-size: 1.5rem; color: var(--primary);">Global
+                                    Tourism</h2>
+                                <p id="display-topic-desc" style="color: var(--text-medium); line-height: 1.6;">...</p>
+                            </div>
+
+                            <div class="instruction-box">
+                                <h4><i class="fa-solid fa-list-check"></i> Assessment Criteria</h4>
+                                <ul class="instruction-list">
+                                    <li><i class="fa-solid fa-check"></i> Write between <strong>250 - 400
+                                            words</strong>.</li>
+                                    <li><i class="fa-solid fa-check"></i> Use an <strong>academic tone</strong>.</li>
+                                    <li><i class="fa-solid fa-check"></i> Structure (Intro, Body, Conclusion).</li>
+                                    <li><i class="fa-solid fa-check"></i> Check your grammar.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="pane-right" style="background: #f0fdf4; border: none;">
+                            <textarea class="clean-textarea" id="essay-input"
+                                placeholder="Start typing your essay here..."></textarea>
+                            <div class="editor-footer">
+                                <span id="word-counter" style="color: #166534;"><i class="fa-solid fa-pen-nib"></i>
+                                    Words: <strong>0</strong> / 400</span>
+                                <button class="btn-action b-green" style="width: auto; padding: 12px 30px;">
+                                    Submit Essay <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function selectTopic(topicTitle) {
+            document.getElementById('step-select').classList.add('hidden');
+            document.getElementById('step-editor').classList.remove('hidden');
+
+            const titleEl = document.getElementById('display-topic-title');
+            const descEl = document.getElementById('display-topic-desc');
+
+            titleEl.innerText = topicTitle;
+
+            if (topicTitle === 'Global Tourism') {
+                descEl.innerText = '"Does tourism do more harm than good to local communities? Discuss providing examples from your own experience."';
+            } else if (topicTitle === 'Education System') {
+                descEl.innerText = '"Is a university degree essential for success in 2025? Discuss the changing landscape of education."';
+            } else {
+                descEl.innerText = '"Analyze the long-term effects of working from home on mental health and productivity."';
+            }
+        }
+
+        document.getElementById('essay-input').addEventListener('input', function () {
+            const text = this.value.trim();
+            const wordCount = text.split(/\s+/).filter(word => word.length > 0).length;
+            const counterEl = document.getElementById('word-counter');
+            counterEl.innerHTML = `<i class="fa-solid fa-pen-nib"></i> Words: <strong>${wordCount}</strong> / 400`;
+            counterEl.style.color = wordCount > 400 ? "#dc2626" : "#166534";
+        });
+    </script>
+</body>
+
+</html>

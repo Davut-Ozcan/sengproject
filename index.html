@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assessment Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .hero-header {
+            text-align: center;
+            margin-bottom: 60px;
+            margin-top: 20px;
+        }
+        .hero-header h1 {
+            font-size: 3rem; 
+            font-weight: 800;
+            color: #04194a;
+            letter-spacing: -1.5px; 
+            margin-bottom: 15px;
+            line-height: 1.1;
+        }
+        .hero-header p {
+            color: #64748b;
+            font-size: 1.2rem;
+            font-weight: 500;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .score-banner-premium {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            border-radius: 24px;
+            padding: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 15px 40px -10px rgba(30, 58, 138, 0.4);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .score-banner-premium::before {
+            content: '';
+            position: absolute;
+            top: -50px; right: -50px;
+            width: 250px; height: 250px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .score-banner-premium:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px -10px rgba(30, 58, 138, 0.5);
+        }
+
+        .sb-left {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            z-index: 2;
+        }
+
+        .sb-icon-box {
+            width: 70px; height: 70px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(5px);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #facc15; 
+            font-size: 2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .sb-text h3 {
+            color: white;
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+        .sb-text p {
+            color: rgba(255,255,255,0.8);
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .sb-action {
+            background: white;
+            color: #1e3a8a;
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            transition: 0.3s;
+            z-index: 2;
+        }
+        .score-banner-premium:hover .sb-action {
+            transform: translateX(5px);
+            background: #eff6ff;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="glass-nav">
+        <div class="nav-content">
+            <div class="logo-area" onclick="window.location.href='index.html'">
+                <div class="logo-icon"><i class="fa-solid fa-shapes"></i></div>
+                <span>Virtua<span class="gradient-text">Test</span></span>
+            </div>
+            <div class="user-area">
+                <div class="user-details">
+                    <span class="u-name">Ysnm</span>
+                    <span class="u-role">Student</span>
+                </div>
+                <img src="https://ui-avatars.com/api/?name=Ysnm&background=6366f1&color=fff" alt="Profile">
+            </div>
+        </div>
+    </nav>
+
+    <main class="app-container">
+
+        <section id="dashboard" class="view active-view">
+            
+            <div class="hero-header">
+                <h1>AI Powered English Level Assesment</h1>
+                <p>Complete all 4 modules to unlock your personalized AI Report.</p>
+            </div>
+
+            <div class="dashboard-grid">
+                
+                <div class="module-card card-reading" onclick="window.location.href='reading.html'">
+                    <div class="card-top">
+                        <div class="icon-box i-blue"><i class="fa-solid fa-book-open"></i></div>
+                        <span class="pill">3 Passages</span>
+                    </div>
+                    <div class="card-main">
+                        <h3>Reading</h3>
+                        <p>Text analysis & comprehension questions.</p>
+                    </div>
+                    <button class="btn-start s-blue">Start Module <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+
+                <div class="module-card card-listening" onclick="window.location.href='listening.html'">
+                    <div class="card-top">
+                        <div class="icon-box i-purple"><i class="fa-solid fa-headphones"></i></div>
+                        <span class="pill">One-time Play</span>
+                    </div>
+                    <div class="card-main">
+                        <h3>Listening</h3>
+                        <p>Audio comprehension & context awareness.</p>
+                    </div>
+                    <button class="btn-start s-purple">Start Module <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+
+                <div class="module-card card-speaking" onclick="window.location.href='speaking.html'">
+                    <div class="card-top">
+                        <div class="icon-box i-orange"><i class="fa-solid fa-microphone-lines"></i></div>
+                        <span class="pill">AI Graded</span>
+                    </div>
+                    <div class="card-main">
+                        <h3>Speaking</h3>
+                        <p>Fluency, pronunciation & vocabulary check.</p>
+                    </div>
+                    <button class="btn-start s-orange">Start Module <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+
+                <div class="module-card card-writing" onclick="window.location.href='writing.html'">
+                    <div class="card-top">
+                        <div class="icon-box i-green"><i class="fa-solid fa-pen-nib"></i></div>
+                        <span class="pill">Word Count</span>
+                    </div>
+                    <div class="card-main">
+                        <h3>Writing</h3>
+                        <p>Essay structure, grammar & coherence.</p>
+                    </div>
+                    <button class="btn-start s-green">Start Module <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <div class="score-banner-premium" onclick="window.location.href='total.html'">
+                <div class="sb-left">
+                    <div class="sb-icon-box">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div class="sb-text">
+                        <h3>View Final Report & Score</h3>
+                        <p>Analyze your CEFR level (A1-C2) and detailed insights.</p>
+                    </div>
+                </div>
+                <div class="sb-action">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

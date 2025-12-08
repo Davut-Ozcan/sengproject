@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listening Module</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .split-container {
+            height: 600px;
+            align-items: stretch;
+            overflow: hidden;
+        }
+
+        .pane-left {
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-right: 2px solid #f3e8ff;
+            background: white;
+        }
+
+        .pane-right {
+            overflow-y: auto !important;
+            height: 100%;
+            padding-right: 15px;
+            background: #faf5ff;
+            border: none;
+        }
+
+        .pane-right::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .pane-right::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .pane-right::-webkit-scrollbar-thumb {
+            background-color: #d8b4fe;
+            border-radius: 4px;
+        }
+
+        .pane-right::-webkit-scrollbar-thumb:hover {
+            background-color: #a855f7;
+        }
+
+        .warning-box {
+            margin-top: 20px;
+            background: #fff7ed;
+            border: 1px solid #ffedd5;
+            color: #c2410c;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="glass-nav">
+        <div class="nav-content">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fa-solid fa-shapes"></i></div>
+                <span>Virtua<span class="gradient-text">Test</span></span>
+            </div>
+
+            <div class="user-area">
+                <div class="user-details">
+                    <span class="u-name">Ysnm</span>
+                    <span class="u-role">Student</span>
+                </div>
+                <img src="https://ui-avatars.com/api/?name=Ysnm&background=7c3aed&color=fff" alt="Profile">
+            </div>
+        </div>
+    </nav>
+
+    <main class="app-container">
+        <section id="listening">
+            <div class="module-frame">
+                <div class="frame-header header-purple">
+                    <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+                    <h2>Listening Assessment</h2>
+                    <div class="timer t-purple"><i class="fa-regular fa-clock"></i> 14:00</div>
+                </div>
+
+                <div class="split-container">
+
+                    <div class="pane-left">
+                        <div class="visualizer">
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                        </div>
+
+                        <h3 style="margin: 20px 0 10px; font-size: 1.5rem; text-align: center;">Audio Track 1</h3>
+                        <p style="color:var(--text-medium); margin-bottom: 20px; text-align: center;">"Academic Lecture:
+                            Climate Change"</p>
+
+                        <div class="player-ui" style="width: 100%; background: #f3e8ff;">
+                            <button class="btn-play" onclick="playAudioOnce(this)">
+                                <i class="fa-solid fa-play"></i>
+                            </button>
+                            <div class="track-line" style="background: white;">
+                                <div class="track-fill p-bg-purple" id="audio-progress" style="width: 0%"></div>
+                            </div>
+                            <span class="time-txt" id="time-display">00:00 / 03:00</span>
+                        </div>
+
+                        <div class="warning-box">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            Warning: You can listen to this recording only once.
+                        </div>
+                    </div>
+
+                    <div class="pane-right">
+
+                        <div class="question-block" style="margin-bottom: 40px;">
+                            <div class="q-header">
+                                <span class="tag t-bg-purple">Question 1</span>
+                                <span>10 Points</span>
+                            </div>
+                            <p class="q-text">What is the lecturer's main argument regarding global warming?</p>
+                            <div class="options-list">
+                                <label class="option-item">
+                                    <input type="radio" name="l1">
+                                    <span class="circle"></span> It is a natural cycle.
+                                </label>
+                                <label class="option-item">
+                                    <input type="radio" name="l1">
+                                    <span class="circle"></span> It is caused by human activity.
+                                </label>
+                                <label class="option-item">
+                                    <input type="radio" name="l1">
+                                    <span class="circle"></span> It requires more research.
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="question-block" style="margin-bottom: 40px;">
+                            <div class="q-header">
+                                <span class="tag t-bg-purple">Question 2</span>
+                                <span>10 Points</span>
+                            </div>
+                            <p class="q-text">Why does the speaker mention "renewable energy"?</p>
+                            <div class="options-list">
+                                <label class="option-item">
+                                    <input type="radio" name="l2">
+                                    <span class="circle"></span> To explain the costs.
+                                </label>
+                                <label class="option-item">
+                                    <input type="radio" name="l2">
+                                    <span class="circle"></span> As a potential solution.
+                                </label>
+                                <label class="option-item">
+                                    <input type="radio" name="l2">
+                                    <span class="circle"></span> To criticize government policy.
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="question-block" style="margin-bottom: 40px;">
+                            <div class="q-header">
+                                <span class="tag t-bg-purple">Question 3</span>
+                                <span>10 Points</span>
+                            </div>
+                            <p class="q-text">What is the proposed timeline for the project?</p>
+                            <div class="options-list">
+                                <label class="option-item">
+                                    <input type="radio" name="l3">
+                                    <span class="circle"></span> 5 Years
+                                </label>
+                                <label class="option-item">
+                                    <input type="radio" name="l3">
+                                    <span class="circle"></span> 10 Years
+                                </label>
+                                <label class="option-item">
+                                    <input type="radio" name="l3">
+                                    <span class="circle"></span> Indefinite
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="question-block" style="margin-bottom: 40px;">
+                            <div class="q-header">
+                                <span class="tag t-bg-purple">Question 4</span>
+                                <span>10 Points</span>
+                            </div>
+                            <p class="q-text">Which of the following was NOT mentioned as a benefit?</p>
+                            <div class="options-list">
+                                <label class="option-item">
+                                    <input type="radio" name="l4">
+                                    <span class="circle"></span> Cost reduction
+                                </label>
+                                <label class="option-item">
+                                    <input type="radio" name="l4">
+                                    <span class="circle"></span> Improved health
+                                </label>
+                                <label class="option-item">
+                                    <input type="radio" name="l4">
+                                    <span class="circle"></span> Faster travel
+                                </label>
+                            </div>
+                        </div>
+
+                        <button class="btn-action b-purple">Submit Answers <i class="fa-solid fa-check"></i></button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function playAudioOnce(btn) {
+            const progressBar = document.getElementById('audio-progress');
+            const timeDisplay = document.getElementById('time-display');
+
+            btn.disabled = true;
+            btn.style.opacity = "0.6";
+            btn.style.cursor = "not-allowed";
+            btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+
+            let width = 0;
+            const duration = 180;
+
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                } else {
+                    width += 0.5;
+                    progressBar.style.width = width + '%';
+
+                    let currentSec = Math.floor((width / 100) * duration);
+                    let min = Math.floor(currentSec / 60);
+                    let sec = currentSec % 60;
+                    timeDisplay.innerText = `0${min}:${sec < 10 ? '0' + sec : sec} / 03:00`;
+                }
+            }, 100);
+        }
+    </script>
+</body>
+
+</html>

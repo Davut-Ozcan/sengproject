@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Results</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: #f8fafc;
+        }
+
+        .app-container {
+            max-width: 1400px !important;
+            padding: 0 40px 50px;
+        }
+
+        /* HERO CARD */
+        .hero-card {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            border-radius: 20px;
+            padding: 40px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+        }
+
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+
+        .hero-content {
+            flex: 2;
+            z-index: 2;
+        }
+
+        .trophy-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .trophy-icon {
+            font-size: 2.5rem;
+            color: #facc15;
+        }
+
+        .hero-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .hero-subtitle {
+            opacity: 0.8;
+            margin-bottom: 30px;
+            display: block;
+            font-size: 1.1rem;
+        }
+
+        .hero-stats-grid {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+            border-radius: 12px;
+            padding: 20px 25px;
+            min-width: 160px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hsc-icon {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .hsc-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            display: block;
+        }
+
+        .hsc-score {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .hsc-bar {
+            width: 100%;
+            height: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 2px;
+        }
+
+        .hsc-fill {
+            height: 100%;
+            background: white;
+            border-radius: 2px;
+        }
+
+        .overall-circle {
+            text-align: right;
+            z-index: 2;
+            padding-left: 40px;
+        }
+
+        .os-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            display: block;
+        }
+
+        .os-score {
+            font-size: 5rem;
+            font-weight: 800;
+            line-height: 1;
+            display: block;
+        }
+
+        .cefr-badge {
+            background: #4ade80;
+            color: #064e3b;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        /* 3. CHARTS SECTION */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .cc-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .cc-icon {
+            width: 36px;
+            height: 36px;
+            background: #eff6ff;
+            color: #3b82f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .cc-title {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 1.2rem;
+        }
+
+        .feedback-section {
+            margin-bottom: 40px;
+        }
+
+        .fs-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 25px;
+        }
+
+        .feedback-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .fb-card {
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid transparent;
+        }
+
+        .fb-blue {
+            background: #eff6ff;
+            border-color: #dbeafe;
+        }
+
+        .fb-purple {
+            background: #f3e8ff;
+            border-color: #e9d5ff;
+        }
+
+        .fb-green {
+            background: #f0fdf4;
+            border-color: #dcfce7;
+        }
+
+        .fb-orange {
+            background: #fff7ed;
+            border-color: #ffedd5;
+        }
+
+        .fb-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .fb-icon {
+            font-size: 1.8rem;
+        }
+
+        .fb-name {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #334155;
+        }
+
+        .fb-score {
+            margin-left: auto;
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: #0f172a;
+        }
+
+        .fb-text {
+            font-size: 1rem;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* 5. CEFR & RECOMMENDATIONS */
+        .cefr-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            margin-bottom: 50px;
+        }
+
+        .cefr-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 10px;
+        }
+
+        .cefr-desc {
+            color: #64748b;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .rec-box {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .rec-title {
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .rec-list li {
+            margin-bottom: 12px;
+            color: #475569;
+            font-size: 1rem;
+        }
+
+        .Download-btn {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            transition: 0.3s;
+            text-decoration: none;
+        }
+
+        .Download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .hero-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .hero-stats-grid {
+                justify-content: center;
+                margin-top: 20px;
+            }
+
+            .overall-circle {
+                text-align: center;
+                margin-top: 20px;
+                padding-left: 0;
+            }
+
+            .charts-row,
+            .feedback-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .app-container {
+                padding: 0 20px 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="glass-nav">
+        <div class="nav-content">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fa-solid fa-shapes"></i></div>
+                <span>Virtua<span class="gradient-text">Test</span></span>
+            </div>
+            <div class="user-area">
+                <div class="user-details">
+                    <span class="u-name">Ysnm</span>
+                    <span class="u-role">Student</span>
+                </div>
+                <img src="https://ui-avatars.com/api/?name=Ysnm&background=1e3a8a&color=fff" alt="Profile">
+            </div>
+        </div>
+    </nav>
+
+    <main class="app-container">
+
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; margin-top: 30px;">
+            <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+            <a href="#" class="Download-btn"><i class="fa-solid fa-download"></i> Download Report</a>
+        </div>
+
+        <div class="hero-card">
+            <div class="hero-content">
+                <div class="trophy-title">
+                    <i class="fa-solid fa-trophy trophy-icon"></i>
+                    <h2 class="hero-title">Congratulations, sinemadalan7!</h2>
+                </div>
+                <span class="hero-subtitle">You have completed the English Assessment</span>
+
+                <div class="hero-stats-grid">
+                    <div class="hero-stat-card">
+                        <i class="fa-solid fa-book-open hsc-icon"></i>
+                        <span class="hsc-label">Reading</span>
+                        <span class="hsc-score">17</span>
+                        <div class="hsc-bar">
+                            <div class="hsc-fill" style="width: 17%"></div>
+                        </div>
+                    </div>
+                    <div class="hero-stat-card">
+                        <i class="fa-solid fa-pen-nib hsc-icon"></i>
+                        <span class="hsc-label">Writing</span>
+                        <span class="hsc-score">79</span>
+                        <div class="hsc-bar">
+                            <div class="hsc-fill" style="width: 79%"></div>
+                        </div>
+                    </div>
+                    <div class="hero-stat-card">
+                        <i class="fa-solid fa-headphones hsc-icon"></i>
+                        <span class="hsc-label">Listening</span>
+                        <span class="hsc-score">17</span>
+                        <div class="hsc-bar">
+                            <div class="hsc-fill" style="width: 17%"></div>
+                        </div>
+                    </div>
+                    <div class="hero-stat-card">
+                        <i class="fa-solid fa-microphone hsc-icon"></i>
+                        <span class="hsc-label">Speaking</span>
+                        <span class="hsc-score">98</span>
+                        <div class="hsc-bar">
+                            <div class="hsc-fill" style="width: 98%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overall-circle">
+                <span class="os-label">Overall Score</span>
+                <span class="os-score">53</span>
+                <div class="cefr-badge">CEFR B1</div>
+            </div>
+        </div>
+
+        <div class="charts-row">
+            <div class="chart-card">
+                <div class="cc-header">
+                    <div class="cc-icon"><i class="fa-solid fa-chart-simple"></i></div>
+                    <span class="cc-title">Skill Breakdown</span>
+                </div>
+                <div style="height: 450px;">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="cc-header">
+                    <div class="cc-icon"><i class="fa-solid fa-ribbon"></i></div>
+                    <span class="cc-title">Proficiency Overview</span>
+                </div>
+                <div style="height: 450px;">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="feedback-section">
+            <h3 class="fs-title">Detailed Feedback</h3>
+            <div class="feedback-grid">
+                <div class="fb-card fb-blue">
+                    <div class="fb-header">
+                        <i class="fa-solid fa-book-open fb-icon" style="color:#3b82f6"></i>
+                        <span class="fb-name">Reading</span>
+                        <span class="fb-score" style="color:#3b82f6">17/100</span>
+                    </div>
+                    <p class="fb-text">Reading needs improvement. Dedicate more time to practice reading comprehension.
+                    </p>
+                </div>
+                <div class="fb-card fb-purple">
+                    <div class="fb-header">
+                        <i class="fa-solid fa-pen-nib fb-icon" style="color:#a855f7"></i>
+                        <span class="fb-name">Writing</span>
+                        <span class="fb-score" style="color:#a855f7">79/100</span>
+                    </div>
+                    <p class="fb-text">Good writing ability. Continue practicing for improvement in complex sentence
+                        structures.</p>
+                </div>
+                <div class="fb-card fb-green">
+                    <div class="fb-header">
+                        <i class="fa-solid fa-headphones fb-icon" style="color:#10b981"></i>
+                        <span class="fb-name">Listening</span>
+                        <span class="fb-score" style="color:#10b981">17/100</span>
+                    </div>
+                    <p class="fb-text">Listening needs improvement. Dedicate more time to practice with authentic audio
+                        materials.</p>
+                </div>
+                <div class="fb-card fb-orange">
+                    <div class="fb-header">
+                        <i class="fa-solid fa-microphone fb-icon" style="color:#f97316"></i>
+                        <span class="fb-name">Speaking</span>
+                        <span class="fb-score" style="color:#f97316">98/100</span>
+                    </div>
+                    <p class="fb-text">Excellent speaking skills! Keep up the great work and fluency.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="cefr-card">
+            <h3 class="cefr-title">Your CEFR Level: B1 - Intermediate</h3>
+            <p class="cefr-desc">You have intermediate proficiency. You can understand the main points of clear standard
+                input.</p>
+            <div class="rec-box">
+                <div class="rec-title">Recommendations for Improvement</div>
+                <ul class="rec-list">
+                    <li>Practice regularly across all four skills to maintain and improve your proficiency.</li>
+                    <li>Focus on your weaker areas (Reading & Listening) while maintaining strength in areas where you
+                        excel.</li>
+                </ul>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // BAR CHART
+        const ctxBar = document.getElementById('barChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['Reading', 'Writing', 'Listening', 'Speaking'],
+                datasets: [{
+                    label: 'Score',
+                    data: [17, 79, 17, 98],
+                    backgroundColor: ['#3b82f6', '#a855f7', '#10b981', '#f97316'],
+                    borderRadius: 8,
+                    barThickness: 60 // Çubuklar kalınlaştırıldı
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // RADAR CHART
+        const ctxRadar = document.getElementById('radarChart').getContext('2d');
+        new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: ['Reading', 'Writing', 'Listening', 'Speaking'],
+                datasets: [{
+                    label: 'Proficiency',
+                    data: [17, 79, 17, 98],
+                    fill: true,
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: '#3b82f6',
+                    pointBackgroundColor: '#3b82f6',
+                    pointBorderColor: '#fff',
+                    pointHoverBorderColor: '#3b82f6'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                elements: { line: { borderWidth: 3 } },
+                scales: {
+                    r: {
+                        angleLines: { display: true, color: '#e2e8f0' },
+                        grid: { color: '#e2e8f0' },
+                        suggestedMin: 0, suggestedMax: 100, ticks: { display: false, backdropColor: "transparent" }
+                    }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    </script>
+</body>
+
+</html>
