@@ -62,11 +62,26 @@ class AIEngineService:
                 f"4. 'weight' (integer between 10-50 based on difficulty). "  # <-- YENİ EKLENDİ
             )
 
+
         elif skill == "Writing":
-            prompt = f"{base_prompt} Provide 'topics' list with 3 essay prompts."
+            # GÜNCELLEME: Gemini bazen gevezelik yapıyor, onu susturup sadece JSON istiyoruz.
+            # Ona bir "Example Format" gösteriyoruz ki şaşırmasın.
+            prompt = (
+                f"{base_prompt} "
+                f"The response MUST be a valid JSON object with a single key 'topics'. "
+                f"The value must be a list of 3 strings. "
+                f"Example: {{'topics': ['Discuss the benefits of technology.', 'Is tourism good for local economy?', 'Describe a memorable event.']}}"
+            )
+
 
         elif skill == "Speaking":
-            prompt = f"{base_prompt} Provide 'topics' list with 3 discussion topics."
+            # GÜNCELLEME: Speaking için de aynısını yapıyoruz.
+            prompt = (
+                f"{base_prompt} "
+                f"The response MUST be a valid JSON object with a single key 'topics'. "
+                f"The value must be a list of 3 discussion questions. "
+                f"Example: {{'topics': ['What are your hobbies?', 'Describe your hometown.', 'Do you prefer summer or winter?']}}"
+            )
 
         try:
             response = await self.model.generate_content_async(prompt)
