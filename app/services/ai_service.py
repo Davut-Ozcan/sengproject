@@ -16,12 +16,14 @@ class AIEngineService:
     async def generate_content(self, level: str) -> list:
         """
         UML: +generateContent(level: string): list
-        GÜNCELLEME: Artık sorunun ağırlığını (weight) da AI belirliyor.
+        Artık sorunun ağırlığını (weight) da AI belirliyor.
         """
+
+        # Default parameters
         skill = "Reading"
         cefr_level = "B1"
 
-        # Parsing
+        # Parsing (ex: A1-Listening)
         if "-" in level:
             parts = level.split("-")
             cefr_level = parts[0].strip()
@@ -37,7 +39,6 @@ class AIEngineService:
             f"Return strict JSON."
         )
 
-        # --- BURASI DEĞİŞTİ KRAL ---
         if skill == "Reading":
             prompt = (
                 f"{base_prompt} "
@@ -47,7 +48,7 @@ class AIEngineService:
                 f"1. 'question_text', "
                 f"2. 'options' (list of 4), "
                 f"3. 'correct_answer' (index 0-3), "
-                f"4. 'weight' (integer between 10-50 based on difficulty). "  # <-- YENİ EKLENDİ
+                f"4. 'weight' (integer between 10-50 based on difficulty). "
             )
 
         elif skill == "Listening":
@@ -59,7 +60,7 @@ class AIEngineService:
                 f"1. 'question_text', "
                 f"2. 'options', "
                 f"3. 'correct_answer', "
-                f"4. 'weight' (integer between 10-50 based on difficulty). "  # <-- YENİ EKLENDİ
+                f"4. 'weight' (integer between 10-50 based on difficulty). "
             )
 
 
@@ -149,8 +150,20 @@ class AIEngineService:
             return 0.0
 
     async def calculate_overall_cefr(self, scores: list) -> str:
+        """
+        UML: +calculateOverallCEFR(scores: list): string
+
+        GÖREV: Hem genel ortalamayı hem de tekil modül seviyesini hesaplar.
+        HİLE: Eğer listeye tek bir puan koyarsan, o modülün CEFR seviyesini döner.
+        """
         if not scores: return "A1"
+
+        # Matematiksel Ortalama (Tek eleman varsa kendisine eşittir)
+        # Örn: [80] -> 80
+        # Örn: [70, 90] -> 80
         avg = sum(scores) / len(scores)
+
+        # CEFR Barem Tablosu
         if avg >= 90:
             return "C2"
         elif avg >= 80:
@@ -161,7 +174,7 @@ class AIEngineService:
             return "B1"
         elif avg >= 35:
             return "A2"
-        return "A1"
-
+        else:
+            return "A1"
 
 ai_service = AIEngineService()
