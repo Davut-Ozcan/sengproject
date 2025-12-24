@@ -1,0 +1,180 @@
+import os
+import google.generativeai as genai
+import json
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+class AIEngineService:
+    def __init__(self):
+        self.api_key = os.getenv("GEMINI_API_KEY")
+        if self.api_key:
+            genai.configure(api_key=self.api_key)
+            self.model = genai.GenerativeModel('gemini-flash-latest')
+
+    async def generate_content(self, level: str) -> list:
+        """
+        UML: +generateContent(level: string): list
+        Artık sorunun ağırlığını (weight) da AI belirliyor.
+        """
+
+        # Default parameters
+        skill = "Reading"
+        cefr_level = "B1"
+
+        # Parsing (ex: A1-Listening)
+        if "-" in level:
+            parts = level.split("-")
+            cefr_level = parts[0].strip()
+            skill = parts[1].strip()
+        else:
+            cefr_level = level
+
+        word_count = "100" if cefr_level in ["A1", "A2"] else "250"
+
+        base_prompt = (
+            f"Generate a {skill} exercise strictly for CEFR Level {cefr_level}. "
+            f"Use vocabulary/grammar for {cefr_level}. "
+            f"Return strict JSON."
+        )
+
+        if skill == "Reading":
+            prompt = (
+                f"{base_prompt} "
+                f"Include a 'text' field (approx {word_count} words). "
+                f"Include a 'questions' list with 3 items. "
+                f"Each question MUST have: "
+                f"1. 'question_text', "
+                f"2. 'options' (list of 4), "
+                f"3. 'correct_answer' (index 0-3), "
+                f"4. 'weight' (integer between 10-50 based on difficulty). "
+            )
+
+        elif skill == "Listening":
+            prompt = (
+                f"{base_prompt} "
+                f"Create a spoken script. Include a 'script' field. "
+                f"Include a 'questions' list with 3 items. "
+                f"Each question MUST have: "
+                f"1. 'question_text', "
+                f"2. 'options', "
+                f"3. 'correct_answer', "
+                f"4. 'weight' (integer between 10-50 based on difficulty). "
+            )
+
+
+        elif skill == "Writing":
+            # GÜNCELLEME: Gemini bazen gevezelik yapıyor, onu susturup sadece JSON istiyoruz.
+            # Ona bir "Example Format" gösteriyoruz ki şaşırmasın.
+            prompt = (
+                f"{base_prompt} "
+                f"The response MUST be a valid JSON object with a single key 'topics'. "
+                f"The value must be a list of 3 strings. "
+                f"Example: {{'topics': ['Discuss the benefits of technology.', 'Is tourism good for local economy?', 'Describe a memorable event.']}}"
+            )
+
+
+        elif skill == "Speaking":
+            # GÜNCELLEME: Speaking için de aynısını yapıyoruz.
+            prompt = (
+                f"{base_prompt} "
+                f"The response MUST be a valid JSON object with a single key 'topics'. "
+                f"The value must be a list of 3 discussion questions. "
+                f"Example: {{'topics': ['What are your hobbies?', 'Describe your hometown.', 'Do you prefer summer or winter?']}}"
+            )
+
+        try:
+            response = await self.model.generate_content_async(prompt)
+            clean_text = response.text.replace('```json', '').replace('```', '').strip()
+            return json.loads(clean_text)
+        except Exception as e:
+            print(f"AI Generation Error: {e}")
+            return []
+
+    async def evaluate_response(self, text: str) -> float:
+        """
+        UML: +evaluateResponse(text: string): float
+        """
+        try:
+            data = json.loads(text)
+            exam_type = data.get("type", "Unknown")
+
+            # --- WRITING & SPEAKING (AI Puanlar) ---
+            if exam_type in ["Writing", "Speaking"]:
+                topic = data.get("topic", "")
+                student_response = data.get("student_response", "")
+
+                prompt = (
+                    f"Act as an English teacher. Evaluate this {exam_type} response based on CEFR standards.\n"
+                    f"Topic: {topic}\n"
+                    f"Student Response: {student_response}\n"
+                    f"Rate it from 0 to 100 based on grammar, vocabulary, and relevance. "
+                    f"Return ONLY the numeric score."
+                )
+                response = await self.model.generate_content_async(prompt)
+                return float(response.text.strip())
+
+            # --- READING & LISTENING (Matematik Puanlar) ---
+            elif exam_type in ["Reading", "Listening"]:
+                user_answers = data.get("user_answers", [])
+                correct_answers = data.get("correct_answers", [])
+                weights = data.get("weights", [])  # Controller burayı AI'dan gelen verilerle doldurup yollayacak
+
+                if not correct_answers: return 0.0
+
+                # Eğer Controller ağırlık göndermeyi unutursa eşit dağıt (Fallback)
+                if not weights or len(weights) != len(correct_answers):
+                    weights = [1] * len(correct_answers)
+
+                total_score = 0.0
+                max_possible = sum(weights)
+
+                for i in range(len(correct_answers)):
+                    if i < len(user_answers) and str(user_answers[i]).strip().upper() == str(
+                            correct_answers[i]).strip().upper():
+                        total_score += weights[i]
+
+                # 100'lük sisteme çevir
+                if max_possible > 0:
+                    final_score = (total_score / max_possible) * 100
+                    return float(round(final_score, 2))
+                else:
+                    return 0.0
+
+            else:
+                return 0.0
+
+        except Exception as e:
+            print(f"Evaluation Error: {e}")
+            return 0.0
+
+    async def calculate_overall_cefr(self, scores: list) -> str:
+        """
+        UML: +calculateOverallCEFR(scores: list): string
+
+        GÖREV: Hem genel ortalamayı hem de tekil modül seviyesini hesaplar.
+        HİLE: Eğer listeye tek bir puan koyarsan, o modülün CEFR seviyesini döner.
+        """
+        if not scores: return "A1"
+
+        # Matematiksel Ortalama (Tek eleman varsa kendisine eşittir)
+        # Örn: [80] -> 80
+        # Örn: [70, 90] -> 80
+        avg = sum(scores) / len(scores)
+
+        # CEFR Barem Tablosu
+        if avg >= 90:
+            return "C2"
+        elif avg >= 80:
+            return "C1"
+        elif avg >= 65:
+            return "B2"
+        elif avg >= 50:
+            return "B1"
+        elif avg >= 35:
+            return "A2"
+        else:
+            return "A1"
+
+ai_service = AIEngineService()
