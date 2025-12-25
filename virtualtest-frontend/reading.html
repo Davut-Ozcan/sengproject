@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading Module - VirtuaTest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .loading-overlay.hidden {
+            display: none;
+        }
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loading-text {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #1e293b;
+            font-weight: 600;
+        }
+        .loading-subtext {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .question-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .q-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .q-dot.active {
+            background: #2563eb;
+            color: white;
+        }
+        .q-dot.answered {
+            background: #22c55e;
+            color: white;
+        }
+
+        .content-area {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .content-area h3 {
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+        .content-area p {
+            color: #475569;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .option-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .option-item:hover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+        .option-item.selected {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+        .option-item input {
+            display: none;
+        }
+        .option-letter {
+            width: 32px;
+            height: 32px;
+            background: #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 15px;
+            color: #64748b;
+        }
+        .option-item.selected .option-letter {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-nav {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .btn-prev, .btn-next, .btn-submit {
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-prev {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .btn-next {
+            background: #2563eb;
+            color: white;
+        }
+        .btn-submit {
+            background: #22c55e;
+            color: white;
+        }
+        .btn-prev:hover { background: #cbd5e1; }
+        .btn-next:hover { background: #1d4ed8; }
+        .btn-submit:hover { background: #16a34a; }
+        .btn-prev:disabled, .btn-next:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Generating Content...</div>
+        <div class="loading-subtext">AI is preparing your reading passage</div>
+    </div>
+
+    <nav class="glass-nav">
+        <div class="nav-content">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fa-solid fa-shapes"></i></div>
+                <span>Virtua<span class="gradient-text">Test</span></span>
+            </div>
+            <div class="user-area">
+                <div class="user-details">
+                    <span class="u-name">Student</span>
+                    <span class="u-role">Student</span>
+                </div>
+                <img id="user-avatar" src="https://ui-avatars.com/api/?name=S&background=2563eb&color=fff" alt="Profile">
+            </div>
+        </div>
+    </nav>
+
+    <main class="app-container">
+        <section id="reading">
+            <div class="module-frame">
+                <div class="frame-header header-blue">
+                    <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+                    <h2>Reading Assessment</h2>
+                    <div class="timer t-blue"><i class="fa-regular fa-clock"></i> <span id="timer">20:00</span></div>
+                </div>
+
+                <div class="split-container">
+                    <!-- Sol Panel: Okuma Metni -->
+                    <div class="pane-left">
+                        <span class="tag t-bg-blue" id="level-tag">Level B1</span>
+                        <h1 id="passage-title">Loading...</h1>
+                        <div id="passage-content">
+                            <p>Please wait while the content is being generated...</p>
+                        </div>
+                    </div>
+
+                    <!-- Sağ Panel: Sorular -->
+                    <div class="pane-right">
+                        <!-- Soru Navigasyonu -->
+                        <div class="question-nav" id="question-nav">
+                            <!-- JS ile doldurulacak -->
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="progress-bar">
+                            <div class="fill f-blue" id="progress-fill" style="width: 0%"></div>
+                        </div>
+
+                        <!-- Soru Alanı -->
+                        <div id="question-area">
+                            <p class="q-text" id="question-text">Loading question...</p>
+                            <div class="options-list" id="options-list">
+                                <!-- JS ile doldurulacak -->
+                            </div>
+                        </div>
+
+                        <!-- Navigasyon Butonları -->
+                        <div class="btn-nav">
+                            <button class="btn-prev" id="btn-prev" onclick="prevQuestion()">
+                                <i class="fa-solid fa-arrow-left"></i> Previous
+                            </button>
+                            <button class="btn-next" id="btn-next" onclick="nextQuestion()">
+                                Next <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                            <button class="btn-submit" id="btn-submit" onclick="submitAnswers()" style="display: none;">
+                                Submit <i class="fa-solid fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="api.js"></script>
+    <script>
+        // Global değişkenler
+        let moduleContent = null;
+        let questions = [];
+        let userAnswers = [];
+        let currentQuestionIndex = 0;
+        let sessionId = null;
+        let timerInterval = null;
+        let timeLeft = 20 * 60; // 20 dakika
+
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            updateUserDisplay();
+            await loadModuleContent();
+            startTimer();
+        });
+
+        function updateUserDisplay() {
+            const user = getUser();
+            if (user) {
+                document.querySelector('.u-name').textContent = user.full_name || user.email;
+                document.getElementById('user-avatar').src = 
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name || user.email)}&background=2563eb&color=fff`;
+            }
+        }
+
+        async function loadModuleContent() {
+            try {
+                // Session bilgisini al
+                const session = getCurrentSession();
+                if (!session) {
+                    alert('Test oturumu bulunamadı!');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                sessionId = session.id;
+
+                // AI'dan içerik al
+                const response = await apiStartModule(sessionId, 'reading', 'B1');
+                moduleContent = response.content;
+
+                // İçeriği göster
+                displayContent();
+                hideLoading();
+
+            } catch (error) {
+                console.error('Content loading error:', error);
+                alert('İçerik yüklenirken hata: ' + error.message);
+                hideLoading();
+            }
+        }
+
+        function displayContent() {
+            if (!moduleContent) return;
+
+            // Okuma metnini göster
+            document.getElementById('passage-title').textContent = 'Reading Passage';
+            document.getElementById('passage-content').innerHTML = `<p>${moduleContent.text || 'No text available'}</p>`;
+            document.getElementById('level-tag').textContent = 'Level B1';
+
+            // Soruları hazırla
+            questions = moduleContent.questions || [];
+            userAnswers = new Array(questions.length).fill(null);
+
+            // Soru navigasyonunu oluştur
+            createQuestionNav();
+
+            // İlk soruyu göster
+            showQuestion(0);
+        }
+
+        function createQuestionNav() {
+            const nav = document.getElementById('question-nav');
+            nav.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const dot = document.createElement('div');
+                dot.className = 'q-dot' + (index === 0 ? ' active' : '');
+                dot.textContent = index + 1;
+                dot.onclick = () => goToQuestion(index);
+                nav.appendChild(dot);
+            });
+        }
+
+        function showQuestion(index) {
+            if (index < 0 || index >= questions.length) return;
+
+            currentQuestionIndex = index;
+            const question = questions[index];
+
+            // Soru metnini güncelle
+            document.getElementById('question-text').textContent = 
+                `Question ${index + 1}: ${question.question_text}`;
+
+            // Seçenekleri göster
+            const optionsList = document.getElementById('options-list');
+            optionsList.innerHTML = '';
+
+            const letters = ['A', 'B', 'C', 'D'];
+            question.options.forEach((option, optIndex) => {
+                const div = document.createElement('div');
+                div.className = 'option-item' + (userAnswers[index] === optIndex ? ' selected' : '');
+                div.innerHTML = `
+                    <span class="option-letter">${letters[optIndex]}</span>
+                    <span>${option}</span>
+                `;
+                div.onclick = () => selectOption(optIndex);
+                optionsList.appendChild(div);
+            });
+
+            // Progress bar güncelle
+            const progress = ((index + 1) / questions.length) * 100;
+            document.getElementById('progress-fill').style.width = `${progress}%`;
+
+            // Navigasyon noktalarını güncelle
+            document.querySelectorAll('.q-dot').forEach((dot, i) => {
+                dot.classList.remove('active');
+                if (i === index) dot.classList.add('active');
+                if (userAnswers[i] !== null) dot.classList.add('answered');
+            });
+
+            // Butonları güncelle
+            document.getElementById('btn-prev').disabled = index === 0;
+            
+            if (index === questions.length - 1) {
+                document.getElementById('btn-next').style.display = 'none';
+                document.getElementById('btn-submit').style.display = 'flex';
+            } else {
+                document.getElementById('btn-next').style.display = 'flex';
+                document.getElementById('btn-submit').style.display = 'none';
+            }
+        }
+
+        function selectOption(optIndex) {
+            userAnswers[currentQuestionIndex] = optIndex;
+
+            // Seçili görünümü güncelle
+            document.querySelectorAll('.option-item').forEach((item, i) => {
+                item.classList.toggle('selected', i === optIndex);
+            });
+
+            // Nav dot'u güncelle
+            document.querySelectorAll('.q-dot')[currentQuestionIndex].classList.add('answered');
+        }
+
+        function goToQuestion(index) {
+            showQuestion(index);
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                showQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                showQuestion(currentQuestionIndex + 1);
+            }
+        }
+
+        async function submitAnswers() {
+            // Tüm sorular cevaplanmış mı?
+            const unanswered = userAnswers.filter(a => a === null).length;
+            if (unanswered > 0) {
+                if (!confirm(`${unanswered} soru cevaplanmadı. Yine de göndermek istiyor musunuz?`)) {
+                    return;
+                }
+            }
+
+            // Loading göster
+            showLoading('Submitting answers...');
+
+            try {
+                // Doğru cevapları ve ağırlıkları hazırla
+                const correctAnswers = questions.map(q => q.correct_answer);
+                const weights = questions.map(q => q.weight || 33);
+
+                // Backend'e gönder
+                const result = await apiSubmitModule(sessionId, 'reading', {
+                    user_answers: userAnswers,
+                    correct_answers: correctAnswers,
+                    weights: weights
+                });
+
+                // Timer'ı durdur
+                clearInterval(timerInterval);
+
+                // Sonucu göster
+                alert(`Reading tamamlandı!\n\nPuanınız: ${result.score.toFixed(1)}\nCEFR Seviyesi: ${result.cefr_level}`);
+
+                // Session'ı güncelle
+                const session = getCurrentSession();
+                if (session) {
+                    session.completed_modules = session.completed_modules || [];
+                    if (!session.completed_modules.includes('reading')) {
+                        session.completed_modules.push('reading');
+                    }
+                    localStorage.setItem('current_session', JSON.stringify(session));
+                }
+
+                // Dashboard'a dön
+                window.location.href = 'index.html';
+
+            } catch (error) {
+                console.error('Submit error:', error);
+                alert('Cevaplar gönderilirken hata: ' + error.message);
+                hideLoading();
+            }
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert('Süre doldu! Cevaplarınız otomatik gönderiliyor.');
+                    submitAnswers();
+                }
+            }, 1000);
+        }
+
+        function showLoading(text = 'Loading...') {
+            document.getElementById('loading').classList.remove('hidden');
+            document.querySelector('.loading-text').textContent = text;
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
