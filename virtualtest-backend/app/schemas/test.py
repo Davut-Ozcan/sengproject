@@ -103,6 +103,30 @@ class TestSessionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class ModuleScoreResponse(BaseModel):
+    """
+    Modül puanı yanıtı.
+    
+    Örnek:
+    {
+        "id": 1,
+        "module_name": "reading",
+        "score": 75.5,
+        "cefr_level": "B2",
+        "test_date": "2025-01-01T10:30:00Z"
+    }
+    """
+    
+    id: int
+    module_name: str
+    score: float
+    cefr_level: Optional[str] = None
+    test_date: datetime
+    duration_seconds: Optional[int] = None
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
 class TestSessionDetail(TestSessionResponse):
     """
     Detaylı test oturumu (puanlarla birlikte).
@@ -132,30 +156,6 @@ class ModuleScoreCreate(BaseModel):
     user_answer: Optional[str] = None
     ai_feedback: Optional[str] = None
     duration_seconds: Optional[int] = None
-
-
-class ModuleScoreResponse(BaseModel):
-    """
-    Modül puanı yanıtı.
-    
-    Örnek:
-    {
-        "id": 1,
-        "module_name": "reading",
-        "score": 75.5,
-        "cefr_level": "B2",
-        "test_date": "2025-01-01T10:30:00Z"
-    }
-    """
-    
-    id: int
-    module_name: str
-    score: float
-    cefr_level: Optional[str] = None
-    test_date: datetime
-    duration_seconds: Optional[int] = None
-    
-    model_config = ConfigDict(from_attributes=True)
 
 
 class ModuleScoreDetail(ModuleScoreResponse):
