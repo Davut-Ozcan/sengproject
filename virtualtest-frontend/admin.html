@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - VirtuaTest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <nav class="glass-nav">
+        <div class="nav-content">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <span>Virtua<span class="gradient-text">Admin</span></span>
+            </div>
+
+            <div class="admin-nav-links">
+                <button class="admin-nav-item active" onclick="switchTab('users', this)">
+                    <i class="fa-solid fa-users"></i> Users
+                </button>
+                <button class="admin-nav-item" onclick="switchTab('configs', this)">
+                    <i class="fa-solid fa-sliders"></i> Test Settings
+                </button>
+                <button class="admin-nav-item" onclick="switchTab('analytics', this)">
+                    <i class="fa-solid fa-chart-pie"></i> Analytics
+                </button>
+            </div>
+
+            <div class="user-area">
+                <div class="user-details">
+                    <span class="u-name">Admin</span>
+                    <span class="u-role">System Manager</span>
+                </div>
+                <img src="https://ui-avatars.com/api/?name=Admin&background=0f172a&color=fff" alt="Admin">
+            </div>
+        </div>
+    </nav>
+
+    <main class="app-container">
+        <section id="users-tab" class="view active-view">
+            <div class="module-frame">
+                <div class="frame-header header-blue">
+                    <h2>User Account Management</h2>
+                    <button class="btn-back"><i class="fa-solid fa-plus"></i> Add New User</button>
+                </div>
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="configs-tab" class="view">
+            <div class="dashboard-grid">
+                <div class="module-card card-reading no-hover">
+                    <div class="card-top">
+                        <div class="icon-box i-blue"><i class="fa-solid fa-clock"></i></div>
+                        <span class="pill">FR48</span>
+                    </div>
+                    <div class="card-main">
+                        <h3>Section Time Limits</h3>
+                        <div class="admin-form-group">
+                            <label>Reading (Min)</label>
+                            <input type="number" id="time-reading" class="admin-input" value="20">
+                        </div>
+                        <div class="admin-form-group">
+                            <label>Writing (Min)</label>
+                            <input type="number" id="time-writing" class="admin-input" value="30">
+                        </div>
+                    </div>
+                    <button class="btn-start s-blue" onclick="saveConfigs()">Save Limits</button>
+                </div>
+
+                <div class="module-card card-writing no-hover">
+                    <div class="card-top">
+                        <div class="icon-box i-green"><i class="fa-solid fa-robot"></i></div>
+                        <span class="pill">FR49</span>
+                    </div>
+                    <div class="card-main">
+                        <h3>AI & Content Rules</h3>
+                        <div class="admin-form-group">
+                            <label>Min Word Count</label>
+                            <input type="number" id="min-words" class="admin-input" value="150">
+                        </div>
+                        <div class="admin-form-group">
+                            <label>Secondary Validation (FR52)</label>
+                            <select class="admin-input" id="ai-validation">
+                                <option value="enabled">Enabled</option>
+                                <option value="disabled">Disabled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn-start s-green" onclick="saveConfigs()">Update Rules</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="analytics-tab" class="view">
+            <div class="results-layout shadow-card" style="background: white; border-radius: 24px;">
+                <div class="score-card-main">
+                    <h3>Overall Distribution</h3>
+                    <div class="circular-container">
+                        <canvas id="adminResultsChart"></canvas>
+                    </div>
+                </div>
+                <div class="skills-card-main">
+                    <h3>Active Test Sessions</h3>
+                    <p>Total Active Students: 24</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -239,3 +239,64 @@ function updateUserUI() {
         });
     }
 }
+
+// ==========================================
+// USER MENU DROPDOWN
+// ==========================================
+
+function toggleUserMenu(event) {
+    // Stop event propagation to prevent document click from closing immediately
+    if (event) {
+        event.stopPropagation();
+    }
+    
+    const dropdown = document.getElementById('user-menu-dropdown');
+    const button = document.getElementById('user-menu-btn');
+    
+    if (!dropdown || !button) {
+        console.error('User menu elements not found');
+        return;
+    }
+    
+    const isOpen = dropdown.classList.contains('show');
+    
+    // Close all dropdowns first
+    document.querySelectorAll('.user-menu-dropdown').forEach(menu => {
+        menu.classList.remove('show');
+    });
+    document.querySelectorAll('.user-menu-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Toggle current dropdown
+    if (!isOpen) {
+        dropdown.classList.add('show');
+        button.classList.add('active');
+    }
+}
+
+function handleLogout() {
+    if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
+        apiLogout();
+    }
+}
+
+// Close dropdown when clicking outside
+if (typeof document !== 'undefined') {
+    // Use a small delay to ensure this runs after button click handlers
+    document.addEventListener('click', function(event) {
+        // Don't close if clicking inside the user menu container
+        const container = event.target.closest('.user-menu-container');
+        if (container) {
+            return;
+        }
+        
+        // Close all dropdowns
+        document.querySelectorAll('.user-menu-dropdown').forEach(menu => {
+            menu.classList.remove('show');
+        });
+        document.querySelectorAll('.user-menu-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+    });
+}

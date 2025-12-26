@@ -194,12 +194,17 @@
                 <div class="logo-icon"><i class="fa-solid fa-shapes"></i></div>
                 <span>Virtua<span class="gradient-text">Test</span></span>
             </div>
-            <div class="user-area">
-                <div class="user-details">
+            <div class="user-menu-container">
+                <button class="user-menu-btn" id="user-menu-btn" onclick="toggleUserMenu(event)">
+                    <i class="fa-solid fa-circle-user"></i>
                     <span class="u-name">Student</span>
-                    <span class="u-role">Student</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <div class="user-menu-dropdown" id="user-menu-dropdown">
+                    <button class="user-menu-item" onclick="handleLogout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
                 </div>
-                <img id="user-avatar" src="https://ui-avatars.com/api/?name=S&background=7c3aed&color=fff" alt="Profile">
             </div>
         </div>
     </nav>
