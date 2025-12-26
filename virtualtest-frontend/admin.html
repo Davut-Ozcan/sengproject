@@ -9,126 +9,482 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="admin.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* --- Dashboard Summary Optimization --- */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 12px 18px;
+            border-radius: 18px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .summary-card .icon-box {
+            width: 42px;
+            height: 42px;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .summary-card .stats-info small {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 3px;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-card .stats-info strong {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+
+        /* --- Admin Navigation Tabs --- */
+        .admin-tabs {
+            display: flex;
+            background: white;
+            padding: 8px;
+            border-radius: 16px;
+            gap: 8px;
+            box-shadow: var(--shadow-card);
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.3s;
+            font-size: 1rem;
+        }
+
+        .tab-btn.active {
+            background: var(--blue);
+            color: white;
+            box-shadow: 0 4px 12px var(--blue-glow);
+        }
+
+        /* --- Custom Admin Buttons --- */
+        .btn-admin-primary {
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--blue-glow);
+        }
+
+        .btn-admin-success {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-admin-primary:hover,
+        .btn-admin-success:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        /* --- Tab Panels & Content --- */
+        .tab-panel {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid #e2e8f0;
+            min-height: 550px;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .tab-panel.hidden {
+            display: none;
+        }
+
+        /* --- User Oversight List Styling --- */
+        .list-item strong {
+            font-size: 1.15rem;
+            /* İsim boyutu büyütüldü */
+            font-weight: 800;
+            color: var(--primary);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .user-email {
+            font-size: 0.95rem !important;
+            /* Email adresi daha okunaklı yapıldı */
+            color: #64748b;
+        }
+
+        /* --- Module Configuration Cards --- */
+        .module-config-card {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+
+        .module-config-card h3 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .module-config-card label {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: block;
+            color: #475569;
+        }
+
+        /* Dynamic Color Classes */
+        .card-reading {
+            border-left: 6px solid var(--blue);
+        }
+
+        .card-reading h3,
+        .card-reading i {
+            color: var(--blue);
+        }
+
+        .card-listening {
+            border-left: 6px solid var(--purple);
+        }
+
+        .card-listening h3,
+        .card-listening i {
+            color: var(--purple);
+        }
+
+        .card-writing {
+            border-left: 6px solid var(--green);
+        }
+
+        .card-writing h3,
+        .card-writing i {
+            color: var(--green);
+        }
+
+        .card-speaking {
+            border-left: 6px solid var(--orange);
+        }
+
+        .card-speaking h3,
+        .card-speaking i {
+            color: var(--orange);
+        }
+
+        .admin-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            font-family: inherit;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .admin-input:focus {
+            border-color: var(--blue);
+        }
+
+        /* --- Logout Dropdown --- */
+        .user-menu-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: white;
+            min-width: 180px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .user-menu-dropdown.show {
+            display: block;
+            animation: slideDown 0.2s ease-out;
+        }
+
+        .dropdown-item {
+            width: 100%;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: none;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            color: #475569;
+        }
+
+        .dropdown-item:hover {
+            background: #f8fafc;
+            color: var(--blue);
+        }
+
+        .dropdown-item.logout {
+            color: var(--red);
+            border-top: 1px solid #f1f5f9;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 
 <body>
+
     <nav class="glass-nav">
         <div class="nav-content">
             <div class="logo-area">
-                <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                <span>Virtua<span class="gradient-text">Admin</span></span>
+                <div class="logo-icon"><i class="fa-solid fa-crown"></i></div>
+                <span>Virtua<span class="gradient-text">Test</span></span>
             </div>
-
-            <div class="admin-nav-links">
-                <button class="admin-nav-item active" onclick="switchTab('users', this)">
-                    <i class="fa-solid fa-users"></i> Users
+            <div class="user-menu-container">
+                <button class="user-menu-btn" id="admin-user-btn">
+                    <i class="fa-solid fa-circle-user"></i> <span>Admin View</span> <i
+                        class="fa-solid fa-chevron-down"></i>
                 </button>
-                <button class="admin-nav-item" onclick="switchTab('configs', this)">
-                    <i class="fa-solid fa-sliders"></i> Test Settings
-                </button>
-                <button class="admin-nav-item" onclick="switchTab('analytics', this)">
-                    <i class="fa-solid fa-chart-pie"></i> Analytics
-                </button>
-            </div>
-
-            <div class="user-area">
-                <div class="user-details">
-                    <span class="u-name">Admin</span>
-                    <span class="u-role">System Manager</span>
+                <div class="user-menu-dropdown" id="admin-dropdown">
+                    <button class="dropdown-item logout" onclick="handleLogout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
                 </div>
-                <img src="https://ui-avatars.com/api/?name=Admin&background=0f172a&color=fff" alt="Admin">
             </div>
         </div>
     </nav>
 
-    <main class="app-container">
-        <section id="users-tab" class="view active-view">
-            <div class="module-frame">
-                <div class="frame-header header-blue">
-                    <h2>User Account Management</h2>
-                    <button class="btn-back"><i class="fa-solid fa-plus"></i> Add New User</button>
-                </div>
-                <div class="admin-table-container">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="user-table-body">
-                        </tbody>
-                    </table>
+    <main class="app-container admin-hub-container">
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="icon-box i-blue"><i class="fa-solid fa-users"></i></div>
+                <div class="stats-info"><small>Total Users</small><strong>1,284</strong></div>
+            </div>
+            <div class="summary-card">
+                <div class="icon-box i-purple"><i class="fa-solid fa-chart-line"></i></div>
+                <div class="stats-info"><small>Tests Run</small><strong>854</strong></div>
+            </div>
+            <div class="summary-card">
+                <div class="icon-box i-orange"><i class="fa-solid fa-robot"></i></div>
+                <div class="stats-info"><small>AI Engine</small><strong>Active</strong></div>
+            </div>
+            <div class="summary-card">
+                <div class="icon-box i-green"><i class="fa-solid fa-award"></i></div>
+                <div class="stats-info"><small>Avg. CEFR</small><strong>B2 High</strong></div>
+            </div>
+        </div>
+
+        <div class="admin-tabs">
+            <button class="tab-btn active" onclick="showPanel('users')">
+                <i class="fa-solid fa-user-shield"></i> User Management
+            </button>
+            <button class="tab-btn" onclick="showPanel('config')">
+                <i class="fa-solid fa-sliders"></i> Test Configuration
+            </button>
+            <button class="tab-btn" onclick="showPanel('ai')">
+                <i class="fa-solid fa-brain"></i> AI Integrity
+            </button>
+            <button class="tab-btn" onclick="showPanel('reports')">
+                <i class="fa-solid fa-file-invoice"></i> Student Reports
+            </button>
+        </div>
+
+        <div id="users" class="tab-panel">
+            <div class="section-header"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h2 style="font-size: 1.4rem;">User Oversight</h2>
+                <button class="btn-admin-primary"><i class="fa-solid fa-user-plus"></i> Create New Account</button>
+            </div>
+            <div class="list-topics" style="max-width: 100%; margin-top: 20px;">
+                <div class="list-item" style="cursor: default; padding: 15px 25px;">
+                    <div style="flex: 2;">
+                        <strong>Sinem ADALAN</strong>
+                        <div class="user-email">sinem.adalan@virtuatest.com</div>
+                    </div>
+                    <div style="flex: 1;"><span class="pill">Student</span></div>
+                    <div style="flex: 1;"><span class="tag t-bg-blue">ACTIVE</span></div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-back" style="padding: 8px;"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-back" style="padding: 8px; color: var(--red);"><i
+                                class="fa-solid fa-ban"></i></button>
+                    </div>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <section id="configs-tab" class="view">
-            <div class="dashboard-grid">
-                <div class="module-card card-reading no-hover">
-                    <div class="card-top">
-                        <div class="icon-box i-blue"><i class="fa-solid fa-clock"></i></div>
-                        <span class="pill">FR48</span>
-                    </div>
-                    <div class="card-main">
-                        <h3>Section Time Limits</h3>
-                        <div class="admin-form-group">
-                            <label>Reading (Min)</label>
-                            <input type="number" id="time-reading" class="admin-input" value="20">
-                        </div>
-                        <div class="admin-form-group">
-                            <label>Writing (Min)</label>
-                            <input type="number" id="time-writing" class="admin-input" value="30">
-                        </div>
-                    </div>
-                    <button class="btn-start s-blue" onclick="saveConfigs()">Save Limits</button>
+        <div id="config" class="tab-panel hidden">
+            <div class="section-header"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <div>
+                    <h2 style="font-size: 1.4rem;">Module Parameters</h2>
+                    <p style="font-size: 0.9rem; color: #64748b;">Set time limits and AI constraints</p>
                 </div>
+                <button class="btn-admin-success"><i class="fa-solid fa-floppy-disk"></i> Save All Configs</button>
+            </div>
 
-                <div class="module-card card-writing no-hover">
-                    <div class="card-top">
-                        <div class="icon-box i-green"><i class="fa-solid fa-robot"></i></div>
-                        <span class="pill">FR49</span>
-                    </div>
-                    <div class="card-main">
-                        <h3>AI & Content Rules</h3>
-                        <div class="admin-form-group">
-                            <label>Min Word Count</label>
-                            <input type="number" id="min-words" class="admin-input" value="150">
-                        </div>
-                        <div class="admin-form-group">
-                            <label>Secondary Validation (FR52)</label>
-                            <select class="admin-input" id="ai-validation">
-                                <option value="enabled">Enabled</option>
-                                <option value="disabled">Disabled</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button class="btn-start s-green" onclick="saveConfigs()">Update Rules</button>
+            <div class="module-config-card card-reading">
+                <h3><i class="fa-solid fa-book-open"></i> Reading Settings</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                    <div><label>Time Limit (Min)</label><input type="number" class="admin-input" value="20"></div>
+                    <div><label>Questions</label><input type="number" class="admin-input" value="5"></div>
+                    <div><label>AI Generation</label><select class="admin-input">
+                            <option>Dynamic</option>
+                            <option>Fixed</option>
+                        </select></div>
                 </div>
             </div>
-        </section>
 
-        <section id="analytics-tab" class="view">
-            <div class="results-layout shadow-card" style="background: white; border-radius: 24px;">
-                <div class="score-card-main">
-                    <h3>Overall Distribution</h3>
-                    <div class="circular-container">
-                        <canvas id="adminResultsChart"></canvas>
-                    </div>
-                </div>
-                <div class="skills-card-main">
-                    <h3>Active Test Sessions</h3>
-                    <p>Total Active Students: 24</p>
+            <div class="module-config-card card-listening">
+                <h3><i class="fa-solid fa-headphones"></i> Listening Settings</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                    <div><label>Time Limit (Min)</label><input type="number" class="admin-input" value="15"></div>
+                    <div><label>Audio Plays</label><input type="number" class="admin-input" value="2"></div>
+                    <div><label>Question Density</label><input type="number" class="admin-input" value="3"></div>
                 </div>
             </div>
-        </section>
+
+            <div class="module-config-card card-writing">
+                <h3><i class="fa-solid fa-pen-nib"></i> Writing Settings</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                    <div><label>Time Limit (Min)</label><input type="number" class="admin-input" value="30"></div>
+                    <div><label>Min Words</label><input type="number" class="admin-input" value="150"></div>
+                    <div><label>Max Words</label><input type="number" class="admin-input" value="400"></div>
+                </div>
+            </div>
+
+            <div class="module-config-card card-speaking">
+                <h3><i class="fa-solid fa-microphone-lines"></i> Speaking Settings</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                    <div><label>Time Limit (Min)</label><input type="number" class="admin-input" value="10"></div>
+                    <div><label>Max Record (Sec)</label><input type="number" class="admin-input" value="120"></div>
+                    <div><label>AI Complexity</label><select class="admin-input">
+                            <option>Standard</option>
+                            <option>Academic</option>
+                        </select></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="ai" class="tab-panel hidden">
+            <h2 style="margin-bottom: 20px;">AI Integrity Protocol</h2>
+            <div class="list-item" style="background: #f8fafc; border: none; padding: 25px;">
+                <div class="icon-box i-purple"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <div style="flex: 1;">
+                    <strong>Automatic Secondary Verification</strong>
+                    <p style="font-size: 0.9rem; color: #64748b;">Perform automated consistency checks on transcripts
+                        before final CEFR grading.</p>
+                </div>
+                <input type="checkbox" checked style="width: 25px; height: 25px; accent-color: var(--purple);">
+            </div>
+        </div>
+
+        <div id="reports" class="tab-panel hidden">
+            <h2>Detailed Student Analytics</h2>
+            <div
+                style="margin-top: 40px; border: 2px dashed #e2e8f0; border-radius: 20px; padding: 60px; text-align: center; color: #94a3b8;">
+                <i class="fa-solid fa-magnifying-glass-chart" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                <p>Select a student account to view individual skill scores and overall CEFR levels.</p>
+            </div>
+        </div>
+
     </main>
 
-    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const userBtn = document.getElementById('admin-user-btn');
+            const dropdown = document.getElementById('admin-dropdown');
+
+            userBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                dropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', () => dropdown.classList.remove('show'));
+            dropdown.addEventListener('click', (e) => e.stopPropagation());
+        });
+
+        function showPanel(panelId) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(panelId).classList.remove('hidden');
+            if (event && event.currentTarget) event.currentTarget.classList.add('active');
+        }
+
+        function handleLogout() {
+            window.location.href = 'login.html';
+        }
+    </script>
 </body>
 
 </html>
