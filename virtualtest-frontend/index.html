@@ -288,6 +288,21 @@
 
     </main>
 
+    <!-- Custom Modal Component -->
+    <div id="custom-modal" class="custom-modal">
+        <div class="custom-modal-overlay"></div>
+        <div class="custom-modal-content">
+            <div class="custom-modal-icon">
+                <i id="modal-icon" class="fa-solid"></i>
+            </div>
+            <h3 class="custom-modal-title" id="modal-title"></h3>
+            <p class="custom-modal-message" id="modal-message"></p>
+            <div class="custom-modal-buttons" id="modal-buttons">
+                <!-- Buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+
     <script src="api.js"></script>
     <script>
         let currentSession = null;
@@ -329,7 +344,7 @@
 
             } catch (error) {
                 console.error('Test initialization error:', error);
-                alert('Test başlatılırken hata oluştu: ' + error.message);
+                showAlert('Error', 'An error occurred while starting the test: ' + error.message, 'error');
             }
         }
 
@@ -370,13 +385,14 @@
 
         async function startModule(moduleName) {
             if (!currentSession) {
-                alert('Lütfen bekleyin, test yükleniyor...');
+                showAlert('Loading', 'Please wait, test is loading...', 'info');
                 return;
             }
 
             // Modül zaten tamamlanmış mı?
             if (currentSession.completed_modules?.includes(moduleName)) {
-                if (!confirm('Bu modülü zaten tamamladınız. Yine de devam etmek istiyor musunuz?')) {
+                const proceed = await showConfirm('Module Completed', 'You have already completed this module. Do you want to continue anyway?');
+                if (!proceed) {
                     return;
                 }
             }
@@ -388,12 +404,12 @@
 
         function viewResults() {
             if (!currentSession) {
-                alert('Lütfen bekleyin...');
+                showAlert('Info', 'Please wait...', 'info');
                 return;
             }
 
             if (!currentSession.is_completed) {
-                alert('Sonuçları görmek için tüm modülleri tamamlamanız gerekiyor!');
+                showAlert('Incomplete Modules', 'You need to complete all modules to see the results!', 'warning');
                 return;
             }
 
@@ -401,9 +417,9 @@
         }
 
         function handleLogout() {
-            if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
+            showConfirm('Logout', 'Are you sure you want to logout?', function() {
                 apiLogout();
-            }
+            });
         }
     </script>
 </body>

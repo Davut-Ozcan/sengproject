@@ -52,7 +52,7 @@ async function apiLogin(email, password) {
     
     if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.detail || 'Giriş başarısız');
+        throw new Error(error.detail || 'Login failed');
     }
     
     const data = await response.json();
@@ -83,7 +83,7 @@ async function apiRegister(email, password, fullName) {
     
     if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.detail || 'Kayıt başarısız');
+        throw new Error(error.detail || 'Registration failed');
     }
     
     const data = await response.json();
@@ -111,7 +111,7 @@ async function apiGetMe() {
     });
     
     if (!response.ok) {
-        throw new Error('Oturum geçersiz');
+        throw new Error('Invalid session');
     }
     
     return await response.json();
@@ -132,7 +132,7 @@ async function apiStartTest() {
     
     if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.detail || 'Test başlatılamadı');
+        throw new Error(error.detail || 'Test could not be started');
     }
     
     const data = await response.json();
@@ -156,7 +156,7 @@ async function apiStartModule(sessionId, moduleName, cefrLevel = 'B1') {
     
     if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.detail || 'Modül başlatılamadı');
+        throw new Error(error.detail || 'Module could not be started');
     }
     
     return await response.json();
@@ -180,7 +180,7 @@ async function apiSubmitModule(sessionId, moduleName, data) {
     
     if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.detail || 'Cevaplar gönderilemedi');
+        throw new Error(error.detail || 'Answers could not be submitted');
     }
     
     return await response.json();
@@ -194,7 +194,7 @@ async function apiGetProgress(sessionId) {
     });
     
     if (!response.ok) {
-        throw new Error('İlerleme alınamadı');
+        throw new Error('Progress could not be retrieved');
     }
     
     return await response.json();
@@ -208,7 +208,7 @@ async function apiGetResult(sessionId) {
     });
     
     if (!response.ok) {
-        throw new Error('Sonuç alınamadı');
+        throw new Error('Result could not be retrieved');
     }
     
     return await response.json();
@@ -276,9 +276,129 @@ function toggleUserMenu(event) {
 }
 
 function handleLogout() {
-    if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
-        apiLogout();
+    showConfirm(
+        'Logout',
+        'Are you sure you want to logout?',
+        function() {
+            apiLogout();
+        }
+    );
+}
+
+// ==========================================
+// CUSTOM MODAL FUNCTIONS
+// ==========================================
+
+function showModal(type, title, message, buttons) {
+    const modal = document.getElementById('custom-modal');
+    const iconEl = document.getElementById('modal-icon');
+    const titleEl = document.getElementById('modal-title');
+    const messageEl = document.getElementById('modal-message');
+    const buttonsEl = document.getElementById('modal-buttons');
+    
+    // Set icon and type
+    const iconMap = {
+        'info': 'fa-info-circle',
+        'success': 'fa-check-circle',
+        'warning': 'fa-exclamation-triangle',
+        'error': 'fa-times-circle',
+        'question': 'fa-right-from-bracket'
+    };
+    
+    iconEl.className = `fa-solid ${iconMap[type] || iconMap.info}`;
+    iconEl.parentElement.className = `custom-modal-icon ${type}`;
+    
+    // Set content
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    
+    // Clear and add buttons
+    buttonsEl.innerHTML = '';
+    if (buttons && buttons.length > 0) {
+        buttons.forEach(btn => {
+            const button = document.createElement('button');
+            button.className = `custom-modal-btn ${btn.class || 'custom-modal-btn-primary'}`;
+            button.textContent = btn.text;
+            button.onclick = function() {
+                if (btn.onclick) {
+                    btn.onclick();
+                }
+                closeModal();
+            };
+            buttonsEl.appendChild(button);
+        });
+    } else {
+        // Default OK button
+        const okButton = document.createElement('button');
+        okButton.className = 'custom-modal-btn custom-modal-btn-primary';
+        okButton.textContent = 'OK';
+        okButton.onclick = closeModal;
+        buttonsEl.appendChild(okButton);
     }
+    
+    // Show modal
+    modal.classList.add('show');
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    const modal = document.getElementById('custom-modal');
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+function showAlert(title, message, type = 'info') {
+    return new Promise((resolve) => {
+        showModal(type, title, message, [
+            {
+                text: 'OK',
+                class: 'custom-modal-btn-primary',
+                onclick: () => resolve(true)
+            }
+        ]);
+    });
+}
+
+function showConfirm(title, message, onConfirm, onCancel = null) {
+    return new Promise((resolve) => {
+        showModal('question', title, message, [
+            {
+                text: 'Cancel',
+                class: 'custom-modal-btn-secondary',
+                onclick: () => {
+                    if (onCancel) onCancel();
+                    resolve(false);
+                }
+            },
+            {
+                text: 'Confirm',
+                class: 'custom-modal-btn-primary',
+                onclick: () => {
+                    resolve(true);
+                    if (onConfirm) onConfirm();
+                }
+            }
+        ]);
+    });
+}
+
+// Close modal when clicking overlay
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('custom-modal');
+        if (modal) {
+            const overlay = modal.querySelector('.custom-modal-overlay');
+            if (overlay) {
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) {
+                        closeModal();
+                    }
+                });
+            }
+        }
+    });
 }
 
 // Close dropdown when clicking outside

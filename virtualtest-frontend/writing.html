@@ -308,6 +308,21 @@
         </section>
     </main>
 
+    <!-- Custom Modal Component -->
+    <div id="custom-modal" class="custom-modal">
+        <div class="custom-modal-overlay"></div>
+        <div class="custom-modal-content">
+            <div class="custom-modal-icon">
+                <i id="modal-icon" class="fa-solid"></i>
+            </div>
+            <h3 class="custom-modal-title" id="modal-title"></h3>
+            <p class="custom-modal-message" id="modal-message"></p>
+            <div class="custom-modal-buttons" id="modal-buttons">
+                <!-- Buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+
     <script src="api.js"></script>
     <script>
         let moduleContent = null;
@@ -338,7 +353,7 @@
             try {
                 const session = getCurrentSession();
                 if (!session) {
-                    alert('Test session not found!');
+                    await showAlert('Session Not Found', 'Test session not found! Redirecting to dashboard...', 'warning');
                     window.location.href = 'index.html';
                     return;
                 }
@@ -352,7 +367,7 @@
 
             } catch (error) {
                 console.error('Content loading error:', error);
-                alert('Error loading content: ' + error.message);
+                await showAlert('Loading Error', 'Error loading content: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -414,7 +429,7 @@
             const wordCount = essayText.split(/\s+/).filter(w => w.length > 0).length;
 
             if (wordCount < 50) {
-                alert('Please write at least 50 words.');
+                await showAlert('Word Count Required', 'Please write at least 50 words to submit your essay.', 'warning');
                 return;
             }
 
@@ -428,7 +443,7 @@
 
                 clearInterval(timerInterval);
 
-                alert(`Writing completed!\n\nScore: ${result.score.toFixed(1)}\nCEFR Level: ${result.cefr_level}`);
+                await showAlert('Writing Completed!', `Great job! Your writing assessment has been completed.\n\nScore: ${result.score.toFixed(1)}/100\nCEFR Level: ${result.cefr_level}`, 'success');
 
                 // Session güncelle
                 const session = getCurrentSession();
@@ -444,7 +459,7 @@
 
             } catch (error) {
                 console.error('Submit error:', error);
-                alert('Error submitting: ' + error.message);
+                await showAlert('Submission Error', 'Error submitting your essay: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -459,8 +474,9 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    alert('Time is up!');
-                    submitEssay();
+                    showAlert('Time\'s Up!', 'Your time has expired. Your essay will be submitted automatically.', 'warning').then(() => {
+                        submitEssay();
+                    });
                 }
             }, 1000);
         }

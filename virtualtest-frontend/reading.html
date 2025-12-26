@@ -298,6 +298,21 @@
         </section>
     </main>
 
+    <!-- Custom Modal Component -->
+    <div id="custom-modal" class="custom-modal">
+        <div class="custom-modal-overlay"></div>
+        <div class="custom-modal-content">
+            <div class="custom-modal-icon">
+                <i id="modal-icon" class="fa-solid"></i>
+            </div>
+            <h3 class="custom-modal-title" id="modal-title"></h3>
+            <p class="custom-modal-message" id="modal-message"></p>
+            <div class="custom-modal-buttons" id="modal-buttons">
+                <!-- Buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+
     <script src="api.js"></script>
     <script>
         // Global değişkenler
@@ -335,7 +350,7 @@
                 // Session bilgisini al
                 const session = getCurrentSession();
                 if (!session) {
-                    alert('Test oturumu bulunamadı!');
+                    await showAlert('Session Not Found', 'Test session not found! Redirecting to dashboard...', 'warning');
                     window.location.href = 'index.html';
                     return;
                 }
@@ -351,7 +366,7 @@
 
             } catch (error) {
                 console.error('Content loading error:', error);
-                alert('İçerik yüklenirken hata: ' + error.message);
+                await showAlert('Loading Error', 'Error loading content: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -469,7 +484,8 @@
             // Tüm sorular cevaplanmış mı?
             const unanswered = userAnswers.filter(a => a === null).length;
             if (unanswered > 0) {
-                if (!confirm(`${unanswered} soru cevaplanmadı. Yine de göndermek istiyor musunuz?`)) {
+                const proceed = await showConfirm('Unanswered Questions', `${unanswered} questions unanswered. Submit anyway?`);
+                if (!proceed) {
                     return;
                 }
             }
@@ -493,7 +509,7 @@
                 clearInterval(timerInterval);
 
                 // Sonucu göster
-                alert(`Reading tamamlandı!\n\nPuanınız: ${result.score.toFixed(1)}\nCEFR Seviyesi: ${result.cefr_level}`);
+                await showAlert('Reading Completed!', `Excellent work! Your reading assessment has been completed.\n\nScore: ${result.score.toFixed(1)}/100\nCEFR Level: ${result.cefr_level}`, 'success');
 
                 // Session'ı güncelle
                 const session = getCurrentSession();
@@ -510,7 +526,7 @@
 
             } catch (error) {
                 console.error('Submit error:', error);
-                alert('Cevaplar gönderilirken hata: ' + error.message);
+                await showAlert('Submission Error', 'Error submitting your answers: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -526,8 +542,9 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    alert('Süre doldu! Cevaplarınız otomatik gönderiliyor.');
-                    submitAnswers();
+                    showAlert('Time\'s Up!', 'Your time has expired. Your answers will be submitted automatically.', 'warning').then(() => {
+                        submitAnswers();
+                    });
                 }
             }, 1000);
         }

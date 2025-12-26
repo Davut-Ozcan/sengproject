@@ -298,6 +298,21 @@
         </div>
     </main>
 
+    <!-- Custom Modal Component -->
+    <div id="custom-modal" class="custom-modal">
+        <div class="custom-modal-overlay"></div>
+        <div class="custom-modal-content">
+            <div class="custom-modal-icon">
+                <i id="modal-icon" class="fa-solid"></i>
+            </div>
+            <h3 class="custom-modal-title" id="modal-title"></h3>
+            <p class="custom-modal-message" id="modal-message"></p>
+            <div class="custom-modal-buttons" id="modal-buttons">
+                <!-- Buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+
     <script src="api.js"></script>
     <script>
         const cefrDescriptions = {
@@ -462,14 +477,15 @@
         }
 
         async function startNewTest() {
-            if (confirm('Starting a new test will reset your current progress. Continue?')) {
+            const proceed = await showConfirm('Start New Test', 'Starting a new test will reset your current progress. Continue?');
+            if (proceed) {
                 localStorage.removeItem('current_session');
                 
                 try {
                     await apiStartTest();
                     window.location.href = 'index.html';
                 } catch (error) {
-                    alert('Error starting new test: ' + error.message);
+                    await showAlert('Error', 'Error starting new test: ' + error.message, 'error');
                 }
             }
         }
