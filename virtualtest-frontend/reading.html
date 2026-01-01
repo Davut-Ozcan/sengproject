@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reading Module - VirtuaTest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
@@ -21,9 +23,11 @@
             justify-content: center;
             z-index: 9999;
         }
+
         .loading-overlay.hidden {
             display: none;
         }
+
         .loading-spinner {
             width: 60px;
             height: 60px;
@@ -32,15 +36,20 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
+
         .loading-text {
             margin-top: 20px;
             font-size: 1.2rem;
             color: #1e293b;
             font-weight: 600;
         }
+
         .loading-subtext {
             color: #64748b;
             font-size: 0.9rem;
@@ -52,6 +61,7 @@
             gap: 10px;
             margin-bottom: 20px;
         }
+
         .q-dot {
             width: 40px;
             height: 40px;
@@ -65,27 +75,22 @@
             cursor: pointer;
             transition: all 0.3s;
         }
+
         .q-dot.active {
             background: #2563eb;
             color: white;
         }
+
         .q-dot.answered {
             background: #22c55e;
             color: white;
         }
 
-        .content-area {
-            background: #f8fafc;
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
         .content-area h3 {
             color: #1e293b;
             margin-bottom: 15px;
         }
+
         .content-area p {
             color: #475569;
             line-height: 1.8;
@@ -97,6 +102,7 @@
             flex-direction: column;
             gap: 12px;
         }
+
         .option-item {
             display: flex;
             align-items: center;
@@ -107,17 +113,21 @@
             cursor: pointer;
             transition: all 0.3s;
         }
+
         .option-item:hover {
             border-color: #2563eb;
             background: #eff6ff;
         }
+
         .option-item.selected {
             border-color: #2563eb;
             background: #eff6ff;
         }
+
         .option-item input {
             display: none;
         }
+
         .option-letter {
             width: 32px;
             height: 32px;
@@ -130,6 +140,7 @@
             margin-right: 15px;
             color: #64748b;
         }
+
         .option-item.selected .option-letter {
             background: #2563eb;
             color: white;
@@ -140,7 +151,10 @@
             gap: 15px;
             margin-top: 20px;
         }
-        .btn-prev, .btn-next, .btn-submit {
+
+        .btn-prev,
+        .btn-next,
+        .btn-submit {
             padding: 14px 28px;
             border-radius: 12px;
             font-weight: 600;
@@ -151,27 +165,53 @@
             align-items: center;
             gap: 8px;
         }
+
         .btn-prev {
             background: #e2e8f0;
             color: #475569;
         }
+
         .btn-next {
             background: #2563eb;
             color: white;
         }
+
         .btn-submit {
             background: #22c55e;
             color: white;
         }
-        .btn-prev:hover { background: #cbd5e1; }
-        .btn-next:hover { background: #1d4ed8; }
-        .btn-submit:hover { background: #16a34a; }
-        .btn-prev:disabled, .btn-next:disabled {
+
+        .btn-prev:hover {
+            background: #cbd5e1;
+        }
+
+        .btn-next:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-submit:hover {
+            background: #16a34a;
+        }
+
+        .btn-prev:disabled,
+        .btn-next:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
+
+        #question-text {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            color: #1e293b;
+        }
+
+        .options-list {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
+
 <body>
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loading">
@@ -186,12 +226,17 @@
                 <div class="logo-icon"><i class="fa-solid fa-shapes"></i></div>
                 <span>Virtua<span class="gradient-text">Test</span></span>
             </div>
-            <div class="user-area">
-                <div class="user-details">
+            <div class="user-menu-container">
+                <button class="user-menu-btn" id="user-menu-btn" onclick="toggleUserMenu(event)">
+                    <i class="fa-solid fa-circle-user"></i>
                     <span class="u-name">Student</span>
-                    <span class="u-role">Student</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <div class="user-menu-dropdown" id="user-menu-dropdown">
+                    <button class="user-menu-item" onclick="handleLogout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
                 </div>
-                <img id="user-avatar" src="https://ui-avatars.com/api/?name=S&background=2563eb&color=fff" alt="Profile">
             </div>
         </div>
     </nav>
@@ -253,6 +298,21 @@
         </section>
     </main>
 
+    <!-- Custom Modal Component -->
+    <div id="custom-modal" class="custom-modal">
+        <div class="custom-modal-overlay"></div>
+        <div class="custom-modal-content">
+            <div class="custom-modal-icon">
+                <i id="modal-icon" class="fa-solid"></i>
+            </div>
+            <h3 class="custom-modal-title" id="modal-title"></h3>
+            <p class="custom-modal-message" id="modal-message"></p>
+            <div class="custom-modal-buttons" id="modal-buttons">
+                <!-- Buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+
     <script src="api.js"></script>
     <script>
         // Global değişkenler
@@ -265,7 +325,7 @@
         let timeLeft = 20 * 60; // 20 dakika
 
         // Sayfa yüklendiğinde
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             if (!isLoggedIn()) {
                 window.location.href = 'login.html';
                 return;
@@ -280,7 +340,7 @@
             const user = getUser();
             if (user) {
                 document.querySelector('.u-name').textContent = user.full_name || user.email;
-                document.getElementById('user-avatar').src = 
+                document.getElementById('user-avatar').src =
                     `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name || user.email)}&background=2563eb&color=fff`;
             }
         }
@@ -290,7 +350,7 @@
                 // Session bilgisini al
                 const session = getCurrentSession();
                 if (!session) {
-                    alert('Test oturumu bulunamadı!');
+                    await showAlert('Session Not Found', 'Test session not found! Redirecting to dashboard...', 'warning');
                     window.location.href = 'index.html';
                     return;
                 }
@@ -306,7 +366,7 @@
 
             } catch (error) {
                 console.error('Content loading error:', error);
-                alert('İçerik yüklenirken hata: ' + error.message);
+                await showAlert('Loading Error', 'Error loading content: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -350,7 +410,7 @@
             const question = questions[index];
 
             // Soru metnini güncelle
-            document.getElementById('question-text').textContent = 
+            document.getElementById('question-text').textContent =
                 `Question ${index + 1}: ${question.question_text}`;
 
             // Seçenekleri göster
@@ -382,7 +442,7 @@
 
             // Butonları güncelle
             document.getElementById('btn-prev').disabled = index === 0;
-            
+
             if (index === questions.length - 1) {
                 document.getElementById('btn-next').style.display = 'none';
                 document.getElementById('btn-submit').style.display = 'flex';
@@ -424,7 +484,8 @@
             // Tüm sorular cevaplanmış mı?
             const unanswered = userAnswers.filter(a => a === null).length;
             if (unanswered > 0) {
-                if (!confirm(`${unanswered} soru cevaplanmadı. Yine de göndermek istiyor musunuz?`)) {
+                const proceed = await showConfirm('Unanswered Questions', `${unanswered} questions unanswered. Submit anyway?`);
+                if (!proceed) {
                     return;
                 }
             }
@@ -448,7 +509,7 @@
                 clearInterval(timerInterval);
 
                 // Sonucu göster
-                alert(`Reading tamamlandı!\n\nPuanınız: ${result.score.toFixed(1)}\nCEFR Seviyesi: ${result.cefr_level}`);
+                await showAlert('Reading Completed!', `Excellent work! Your reading assessment has been completed.\n\nScore: ${result.score.toFixed(1)}/100\nCEFR Level: ${result.cefr_level}`, 'success');
 
                 // Session'ı güncelle
                 const session = getCurrentSession();
@@ -465,7 +526,7 @@
 
             } catch (error) {
                 console.error('Submit error:', error);
-                alert('Cevaplar gönderilirken hata: ' + error.message);
+                await showAlert('Submission Error', 'Error submitting your answers: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -473,16 +534,17 @@
         function startTimer() {
             timerInterval = setInterval(() => {
                 timeLeft--;
-                
+
                 const minutes = Math.floor(timeLeft / 60);
                 const seconds = timeLeft % 60;
-                document.getElementById('timer').textContent = 
+                document.getElementById('timer').textContent =
                     `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    alert('Süre doldu! Cevaplarınız otomatik gönderiliyor.');
-                    submitAnswers();
+                    showAlert('Time\'s Up!', 'Your time has expired. Your answers will be submitted automatically.', 'warning').then(() => {
+                        submitAnswers();
+                    });
                 }
             }, 1000);
         }
@@ -497,4 +559,5 @@
         }
     </script>
 </body>
+
 </html>

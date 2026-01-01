@@ -219,12 +219,17 @@
                 <div class="logo-icon"><i class="fa-solid fa-shapes"></i></div>
                 <span>Virtua<span class="gradient-text">Test</span></span>
             </div>
-            <div class="user-area">
-                <div class="user-details">
+            <div class="user-menu-container">
+                <button class="user-menu-btn" id="user-menu-btn" onclick="toggleUserMenu(event)">
+                    <i class="fa-solid fa-circle-user"></i>
                     <span class="u-name">Student</span>
-                    <span class="u-role">Student</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <div class="user-menu-dropdown" id="user-menu-dropdown">
+                    <button class="user-menu-item" onclick="handleLogout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
                 </div>
-                <img id="user-avatar" src="https://ui-avatars.com/api/?name=S&background=ea580c&color=fff" alt="Profile">
             </div>
         </div>
     </nav>
@@ -286,6 +291,21 @@
         </section>
     </main>
 
+    <!-- Custom Modal Component -->
+    <div id="custom-modal" class="custom-modal">
+        <div class="custom-modal-overlay"></div>
+        <div class="custom-modal-content">
+            <div class="custom-modal-icon">
+                <i id="modal-icon" class="fa-solid"></i>
+            </div>
+            <h3 class="custom-modal-title" id="modal-title"></h3>
+            <p class="custom-modal-message" id="modal-message"></p>
+            <div class="custom-modal-buttons" id="modal-buttons">
+                <!-- Buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+
     <script src="api.js"></script>
     <script>
         let moduleContent = null;
@@ -324,7 +344,7 @@
             try {
                 const session = getCurrentSession();
                 if (!session) {
-                    alert('Test session not found!');
+                    await showAlert('Session Not Found', 'Test session not found! Redirecting to dashboard...', 'warning');
                     window.location.href = 'index.html';
                     return;
                 }
@@ -338,7 +358,7 @@
 
             } catch (error) {
                 console.error('Content loading error:', error);
-                alert('Error loading content: ' + error.message);
+                await showAlert('Loading Error', 'Error loading content: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -419,7 +439,7 @@
 
             } catch (error) {
                 console.error('Microphone error:', error);
-                alert('Could not access microphone. Please allow microphone access.');
+                await showAlert('Microphone Access Required', 'Could not access microphone. Please allow microphone access in your browser settings.', 'warning');
             }
         }
 
@@ -445,7 +465,7 @@
 
         async function submitRecording() {
             if (recordingSeconds < 10) {
-                alert('Please record at least 10 seconds.');
+                await showAlert('Recording Too Short', 'Please record at least 10 seconds to submit your speaking assessment.', 'warning');
                 return;
             }
 
@@ -453,19 +473,8 @@
             showLoading('AI is evaluating your speaking...');
 
             try {
-                // Gerçek uygulamada ses dosyasını backend'e gönderirsin
-                // Şimdilik simüle ediyoruz
-                
-                // Ses blob oluştur
                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                 
-                // FormData ile gönder (gerçek implementasyon)
-                // const formData = new FormData();
-                // formData.append('audio', audioBlob);
-                // formData.append('session_id', sessionId);
-                // formData.append('topic', selectedTopic);
-
-                // Şimdilik text olarak gönderiyoruz
                 const result = await apiSubmitModule(sessionId, 'speaking', {
                     topic: selectedTopic,
                     student_response: `[Audio recording - ${recordingSeconds} seconds]`,
@@ -474,7 +483,7 @@
 
                 clearInterval(timerInterval);
 
-                alert(`Speaking completed!\n\nScore: ${result.score.toFixed(1)}\nCEFR Level: ${result.cefr_level}`);
+                await showAlert('Speaking Completed!', `Excellent work! Your speaking assessment has been completed.\n\nScore: ${result.score.toFixed(1)}/100\nCEFR Level: ${result.cefr_level}`, 'success');
 
                 // Session güncelle
                 const session = getCurrentSession();
@@ -490,7 +499,7 @@
 
             } catch (error) {
                 console.error('Submit error:', error);
-                alert('Error submitting: ' + error.message);
+                await showAlert('Submission Error', 'Error submitting your recording: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -505,8 +514,9 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    alert('Time is up!');
-                    submitRecording();
+                    showAlert('Time\'s Up!', 'Your time has expired. Your recording will be submitted automatically.', 'warning').then(() => {
+                        submitRecording();
+                    });
                 }
             }, 1000);
         }

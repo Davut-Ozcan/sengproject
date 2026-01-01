@@ -194,12 +194,17 @@
                 <div class="logo-icon"><i class="fa-solid fa-shapes"></i></div>
                 <span>Virtua<span class="gradient-text">Test</span></span>
             </div>
-            <div class="user-area">
-                <div class="user-details">
+            <div class="user-menu-container">
+                <button class="user-menu-btn" id="user-menu-btn" onclick="toggleUserMenu(event)">
+                    <i class="fa-solid fa-circle-user"></i>
                     <span class="u-name">Student</span>
-                    <span class="u-role">Student</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <div class="user-menu-dropdown" id="user-menu-dropdown">
+                    <button class="user-menu-item" onclick="handleLogout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
                 </div>
-                <img id="user-avatar" src="https://ui-avatars.com/api/?name=S&background=7c3aed&color=fff" alt="Profile">
             </div>
         </div>
     </nav>
@@ -253,6 +258,21 @@
         </section>
     </main>
 
+    <!-- Custom Modal Component -->
+    <div id="custom-modal" class="custom-modal">
+        <div class="custom-modal-overlay"></div>
+        <div class="custom-modal-content">
+            <div class="custom-modal-icon">
+                <i id="modal-icon" class="fa-solid"></i>
+            </div>
+            <h3 class="custom-modal-title" id="modal-title"></h3>
+            <p class="custom-modal-message" id="modal-message"></p>
+            <div class="custom-modal-buttons" id="modal-buttons">
+                <!-- Buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+
     <script src="api.js"></script>
     <script>
         // Global değişkenler
@@ -305,7 +325,7 @@
                 console.log('Current session:', session);
                 
                 if (!session || !session.id) {
-                    alert('Test oturumu bulunamadı! Dashboard\'a yönlendiriliyorsunuz.');
+                    await showAlert('Session Not Found', 'Test session not found! Redirecting to dashboard...', 'warning');
                     window.location.href = 'index.html';
                     return;
                 }
@@ -319,14 +339,14 @@
                 console.log('API Response:', response);
                 
                 if (!response) {
-                    throw new Error('API yanıtı boş');
+                    throw new Error('API response is empty');
                 }
                 
                 moduleContent = response.content;
                 console.log('Module content:', moduleContent);
 
                 if (!moduleContent) {
-                    throw new Error('Content boş');
+                    throw new Error('Content is empty');
                 }
 
                 // İçeriği göster
@@ -338,7 +358,7 @@
 
             } catch (error) {
                 console.error('Content loading error:', error);
-                alert('İçerik yüklenirken hata: ' + error.message);
+                await showAlert('Loading Error', 'Error loading content: ' + error.message, 'error');
                 hideLoading();
             }  finally {
                 // İşlem bitince engeli kaldır
@@ -395,9 +415,13 @@
             console.log('Content displayed, questions:', questions.length);
         }
 
-        function playAudio() {
+        async function playAudio() {
             if (audioPlayed) {
-                alert('You can only play the audio once!');
+                await showAlert(
+                    'Audio Playback', 
+                    'You can only play the audio once. Make sure you\'re ready before clicking play!', 
+                    'info'
+                );
                 return;
             }
 
@@ -443,7 +467,7 @@
             audioPlayed = true;
 
             let progress = 0;
-            const duration = 30; // 30 saniye
+            const duration = 30; 
 
             const interval = setInterval(() => {
                 progress += 1;
@@ -479,7 +503,8 @@
         async function submitAnswers() {
             const unanswered = userAnswers.filter(a => a === null).length;
             if (unanswered > 0) {
-                if (!confirm(`${unanswered} questions unanswered. Submit anyway?`)) {
+                const proceed = await showConfirm('Unanswered Questions', `${unanswered} questions unanswered. Submit anyway?`);
+                if (!proceed) {
                     return;
                 }
             }
@@ -498,7 +523,7 @@
 
                 clearInterval(timerInterval);
 
-                alert(`Listening completed!\n\nScore: ${result.score.toFixed(1)}\nCEFR Level: ${result.cefr_level}`);
+                await showAlert('Listening Completed!', `Well done! Your listening assessment has been completed.\n\nScore: ${result.score.toFixed(1)}/100\nCEFR Level: ${result.cefr_level}`, 'success');
 
                 // Session güncelle
                 const session = getCurrentSession();
@@ -514,7 +539,7 @@
 
             } catch (error) {
                 console.error('Submit error:', error);
-                alert('Error submitting: ' + error.message);
+                await showAlert('Submission Error', 'Error submitting your answers: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -529,8 +554,9 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    alert('Time is up!');
-                    submitAnswers();
+                    showAlert('Time\'s Up!', 'Your time has expired. Your answers will be submitted automatically.', 'warning').then(() => {
+                        submitAnswers();
+                    });
                 }
             }, 1000);
         }

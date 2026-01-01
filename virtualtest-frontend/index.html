@@ -170,24 +170,6 @@
             transition: width 0.5s;
         }
 
-        .logout-btn {
-            background: none;
-            border: none;
-            color: #64748b;
-            cursor: pointer;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-left: 15px;
-            padding: 8px 12px;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-        .logout-btn:hover {
-            background: #fee2e2;
-            color: #dc2626;
-        }
     </style>
 </head>
 <body>
@@ -198,15 +180,17 @@
                 <div class="logo-icon"><i class="fa-solid fa-shapes"></i></div>
                 <span>Virtua<span class="gradient-text">Test</span></span>
             </div>
-            <div class="user-area">
-                <div class="user-details">
+            <div class="user-menu-container">
+                <button class="user-menu-btn" id="user-menu-btn" onclick="toggleUserMenu(event)">
+                    <i class="fa-solid fa-circle-user"></i>
                     <span class="u-name">Student</span>
-                    <span class="u-role">Student</span>
-                </div>
-                <img id="user-avatar" src="https://ui-avatars.com/api/?name=S&background=6366f1&color=fff" alt="Profile">
-                <button class="logout-btn" onclick="handleLogout()">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    <i class="fa-solid fa-chevron-down"></i>
                 </button>
+                <div class="user-menu-dropdown" id="user-menu-dropdown">
+                    <button class="user-menu-item" onclick="handleLogout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -304,6 +288,21 @@
 
     </main>
 
+    <!-- Custom Modal Component -->
+    <div id="custom-modal" class="custom-modal">
+        <div class="custom-modal-overlay"></div>
+        <div class="custom-modal-content">
+            <div class="custom-modal-icon">
+                <i id="modal-icon" class="fa-solid"></i>
+            </div>
+            <h3 class="custom-modal-title" id="modal-title"></h3>
+            <p class="custom-modal-message" id="modal-message"></p>
+            <div class="custom-modal-buttons" id="modal-buttons">
+                <!-- Buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+
     <script src="api.js"></script>
     <script>
         let currentSession = null;
@@ -326,9 +325,9 @@
         function updateUserDisplay() {
             const user = getUser();
             if (user) {
-                document.querySelector('.u-name').textContent = user.full_name || user.email;
-                document.getElementById('user-avatar').src = 
-                    `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name || user.email)}&background=6366f1&color=fff`;
+                document.querySelectorAll('.u-name').forEach(el => {
+                    el.textContent = user.full_name || user.email;
+                });
             }
         }
 
@@ -345,7 +344,7 @@
 
             } catch (error) {
                 console.error('Test initialization error:', error);
-                alert('Test başlatılırken hata oluştu: ' + error.message);
+                showAlert('Error', 'An error occurred while starting the test: ' + error.message, 'error');
             }
         }
 
@@ -386,13 +385,14 @@
 
         async function startModule(moduleName) {
             if (!currentSession) {
-                alert('Lütfen bekleyin, test yükleniyor...');
+                showAlert('Loading', 'Please wait, test is loading...', 'info');
                 return;
             }
 
             // Modül zaten tamamlanmış mı?
             if (currentSession.completed_modules?.includes(moduleName)) {
-                if (!confirm('Bu modülü zaten tamamladınız. Yine de devam etmek istiyor musunuz?')) {
+                const proceed = await showConfirm('Module Completed', 'You have already completed this module. Do you want to continue anyway?');
+                if (!proceed) {
                     return;
                 }
             }
@@ -404,12 +404,12 @@
 
         function viewResults() {
             if (!currentSession) {
-                alert('Lütfen bekleyin...');
+                showAlert('Info', 'Please wait...', 'info');
                 return;
             }
 
             if (!currentSession.is_completed) {
-                alert('Sonuçları görmek için tüm modülleri tamamlamanız gerekiyor!');
+                showAlert('Incomplete Modules', 'You need to complete all modules to see the results!', 'warning');
                 return;
             }
 
@@ -417,9 +417,9 @@
         }
 
         function handleLogout() {
-            if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
+            showConfirm('Logout', 'Are you sure you want to logout?', function() {
                 apiLogout();
-            }
+            });
         }
     </script>
 </body>

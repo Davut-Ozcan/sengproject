@@ -3,237 +3,292 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - VirtuaTest</title>
+    <title>LingAI - Login & Assessment</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
     <style>
-        .auth-container {
+        :root {
+            --primary-grad: linear-gradient(135deg, #2b57ff 0%, #764ba2 100%);
+            --bg-color: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(at 0% 0%, rgba(43, 87, 255, 0.05) 0, transparent 50%), 
+                              radial-gradient(at 100% 100%, rgba(118, 75, 162, 0.05) 0, transparent 50%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
         }
-        
+
         .auth-card {
-            background: white;
-            border-radius: 24px;
-            padding: 50px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
+            padding: 40px;
             width: 100%;
-            max-width: 450px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 440px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        
+
         .auth-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 35px;
         }
-        
-        .auth-header .logo {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #1e293b;
-            margin-bottom: 10px;
+
+        .auth-header img {
+            width: 180px;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
         }
-        
-        .auth-header .logo span {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
+
         .auth-header p {
-            color: #64748b;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
         }
-        
+
         .auth-tabs {
             display: flex;
-            gap: 10px;
+            background: #f1f5f9;
+            padding: 6px;
+            border-radius: 16px;
             margin-bottom: 30px;
+            gap: 5px;
         }
-        
+
         .auth-tab {
             flex: 1;
             padding: 12px;
-            border: 2px solid #e2e8f0;
+            border: none;
             border-radius: 12px;
-            background: white;
-            font-weight: 600;
+            background: transparent;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-muted);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         .auth-tab.active {
-            border-color: #667eea;
-            background: #f0f4ff;
-            color: #667eea;
+            background: white;
+            color: #2b57ff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
-        
+
         .form-group {
             margin-bottom: 20px;
         }
-        
+
         .form-group label {
             display: block;
             font-weight: 600;
             margin-bottom: 8px;
-            color: #1e293b;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            margin-left: 4px;
         }
-        
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            transition: color 0.3s;
+        }
+
         .form-group input {
             width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            padding: 14px 16px 14px 45px;
+            border: 2px solid #f1f5f9;
+            border-radius: 14px;
             font-size: 1rem;
             transition: all 0.3s;
+            background: #f8fafc;
         }
-        
+
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #2b57ff;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(43, 87, 255, 0.1);
         }
-        
+
+        .form-group input:focus + i {
+            color: #2b57ff;
+        }
+
         .btn-auth {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary-grad);
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        
+
         .btn-auth:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 12px 24px rgba(43, 87, 255, 0.25);
+            filter: brightness(1.1);
         }
-        
-        .btn-auth:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-        
+
         .error-message {
-            background: #fef2f2;
-            color: #dc2626;
-            padding: 12px 16px;
+            background: #fff1f2;
+            color: #e11d48;
+            padding: 12px;
             border-radius: 12px;
             margin-bottom: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
             display: none;
+            border: 1px solid #ffe4e6;
+            text-align: center;
         }
-        
-        .error-message.show {
-            display: block;
+
+        .error-message.show { display: block; animation: shake 0.5s; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
-        
-        #register-form {
-            display: none;
-        }
-        
-        #register-form.active {
-            display: block;
-        }
-        
-        #login-form.active {
-            display: block;
-        }
-        
-        #login-form {
-            display: block;
+
+        form { display: none; }
+        form.active { display: block; animation: fadeIn 0.4s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-card">
-            <div class="auth-header">
-                <div class="logo">Virtua<span>Test</span></div>
-                <p>AI Powered English Assessment</p>
-            </div>
-            
-            <div class="auth-tabs">
-                <button class="auth-tab active" onclick="showLogin()">Login</button>
-                <button class="auth-tab" onclick="showRegister()">Register</button>
-            </div>
-            
-            <div id="error-box" class="error-message"></div>
-            
-            <!-- Login Form -->
-            <form id="login-form" class="active" onsubmit="handleLogin(event)">
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="login-email" required placeholder="your@email.com">
+
+    <div class="auth-card">
+        <div class="auth-header">
+            <img src="logo.jpg?v=2" alt="LingAI Logo">
+            <p>AI Powered English Assessment</p>
+        </div>
+        
+        <div class="auth-tabs">
+            <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+            <button class="auth-tab" onclick="switchTab('register')">Register</button>
+        </div>
+
+        <div id="error-box" class="error-message"></div>
+
+        <form id="login-form" class="active" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>Email Address</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="login-email" required placeholder="name@company.com">
                 </div>
-                <div class="form-group">
-                    <label>Password</label>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock"></i>
                     <input type="password" id="login-password" required placeholder="••••••••">
                 </div>
-                <button type="submit" class="btn-auth" id="login-btn">
-                    <i class="fa-solid fa-right-to-bracket"></i> Login
-                </button>
-            </form>
-            
-            <!-- Register Form -->
-            <form id="register-form" onsubmit="handleRegister(event)">
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" id="register-name" required placeholder="John Doe">
+            </div>
+            <button type="submit" class="btn-auth" id="login-btn">
+                Login <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            </button>
+        </form>
+
+        <form id="register-form" onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label>Full Name</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="register-name" required placeholder="Name Surname">
                 </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="register-email" required placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="register-email" required placeholder="name@company.com">
                 </div>
-                <div class="form-group">
-                    <label>Password</label>
+            </div>
+            <div class="form-group">
+                <label>Create Password</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock"></i>
                     <input type="password" id="register-password" required minlength="6" placeholder="Min 6 characters">
                 </div>
-                <button type="submit" class="btn-auth" id="register-btn">
-                    <i class="fa-solid fa-user-plus"></i> Create Account
-                </button>
-            </form>
-        </div>
+            </div>
+            <button type="submit" class="btn-auth" id="register-btn">
+                Create Account <i class="fa-solid fa-user-plus"></i>
+            </button>
+        </form>
     </div>
-    
+
     <script src="api.js"></script>
     <script>
-        // Zaten giriş yapmışsa dashboard'a yönlendir
-        if (isLoggedIn()) {
+        // Sayfa yüklendiğinde kontrol
+        if (typeof isLoggedIn === "function" && isLoggedIn()) {
             window.location.href = 'index.html';
         }
-        
-        function showLogin() {
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.auth-tab')[0].classList.add('active');
-            document.getElementById('login-form').style.display = 'block';
-            document.getElementById('register-form').style.display = 'none';
+
+        function switchTab(type) {
+            const tabs = document.querySelectorAll('.auth-tab');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            
             hideError();
+
+            if (type === 'login') {
+                tabs[0].classList.add('active');
+                tabs[1].classList.remove('active');
+                loginForm.classList.add('active');
+                registerForm.classList.remove('active');
+            } else {
+                tabs[1].classList.add('active');
+                tabs[0].classList.remove('active');
+                registerForm.classList.add('active');
+                loginForm.classList.remove('active');
+            }
         }
-        
-        function showRegister() {
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.auth-tab')[1].classList.add('active');
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('register-form').style.display = 'block';
-            hideError();
-        }
-        
+
         function showError(message) {
             const box = document.getElementById('error-box');
             box.textContent = message;
             box.classList.add('show');
         }
-        
+
         function hideError() {
             document.getElementById('error-box').classList.remove('show');
         }
-        
+
         async function handleLogin(e) {
             e.preventDefault();
             const btn = document.getElementById('login-btn');
@@ -241,19 +296,19 @@
             const password = document.getElementById('login-password').value;
             
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Logging in...';
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Checking...';
             hideError();
             
             try {
                 await apiLogin(email, password);
                 window.location.href = 'index.html';
             } catch (error) {
-                showError(error.message);
+                showError(error.message || "Giriş başarısız.");
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Login';
+                btn.innerHTML = 'Login <i class="fa-solid fa-arrow-right-to-bracket"></i>';
             }
         }
-        
+
         async function handleRegister(e) {
             e.preventDefault();
             const btn = document.getElementById('register-btn');
@@ -262,16 +317,16 @@
             const password = document.getElementById('register-password').value;
             
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
             hideError();
             
             try {
                 await apiRegister(email, password, name);
                 window.location.href = 'index.html';
             } catch (error) {
-                showError(error.message);
+                showError(error.message || "Kayıt sırasında bir hata oluştu.");
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Create Account';
+                btn.innerHTML = 'Create Account <i class="fa-solid fa-user-plus"></i>';
             }
         }
     </script>
