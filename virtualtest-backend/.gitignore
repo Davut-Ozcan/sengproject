@@ -1,0 +1,37 @@
+# ============================================
+# .gitignore - GitHub'a Yüklenmeyecek Dosyalar
+# ============================================
+
+# ----- GİZLİ DOSYALAR -----
+.env
+.env.*
+*.env
+
+# ----- PYTHON -----
+__pycache__/
+*.py[cod]
+*.pyc
+venv/
+.venv/
+
+# ----- DATABASE -----
+*.db
+*.sqlite3
+
+# ----- IDE -----
+.vscode/
+.idea/
+
+# ----- LOG & TEMP -----
+*.log
+logs/
+uploads/
+temp/
+
+# ----- TEST -----
+.pytest_cache/
+.coverage
+
+# ----- OS -----
+.DS_Store
+Thumbs.db
