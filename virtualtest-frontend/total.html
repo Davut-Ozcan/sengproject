@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Results - VirtuaTest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Test Results - ZenithAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
         .loading-overlay {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(255, 255, 255, 0.95);
             display: flex;
             flex-direction: column;
@@ -19,15 +23,25 @@
             justify-content: center;
             z-index: 9999;
         }
-        .loading-overlay.hidden { display: none; }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+
         .loading-spinner {
-            width: 60px; height: 60px;
+            width: 60px;
+            height: 60px;
             border: 4px solid #e2e8f0;
             border-top-color: #2563eb;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
         .results-container {
             max-width: 900px;
@@ -39,11 +53,13 @@
             text-align: center;
             margin-bottom: 50px;
         }
+
         .results-header h1 {
             font-size: 2.5rem;
             color: #1e293b;
             margin-bottom: 10px;
         }
+
         .results-header p {
             color: #64748b;
             font-size: 1.1rem;
@@ -59,25 +75,28 @@
             position: relative;
             overflow: hidden;
         }
+
         .score-card-main::before {
             content: '';
             position: absolute;
-            top: -50px; right: -50px;
-            width: 200px; height: 200px;
-            background: rgba(255,255,255,0.1);
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
         }
 
         .cefr-badge {
             display: inline-block;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
             padding: 15px 40px;
             border-radius: 50px;
             font-size: 3rem;
             font-weight: 800;
             margin-bottom: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .overall-score {
@@ -85,6 +104,7 @@
             opacity: 0.9;
             margin-bottom: 10px;
         }
+
         .cefr-description {
             font-size: 1.1rem;
             opacity: 0.8;
@@ -106,9 +126,10 @@
             border: 2px solid #e2e8f0;
             transition: all 0.3s;
         }
+
         .module-result-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
         }
 
         .module-header {
@@ -117,18 +138,36 @@
             gap: 15px;
             margin-bottom: 20px;
         }
+
         .module-icon {
-            width: 50px; height: 50px;
+            width: 50px;
+            height: 50px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
         }
-        .module-icon.reading { background: #dbeafe; color: #2563eb; }
-        .module-icon.listening { background: #f3e8ff; color: #7c3aed; }
-        .module-icon.speaking { background: #ffedd5; color: #ea580c; }
-        .module-icon.writing { background: #dcfce7; color: #059669; }
+
+        .module-icon.reading {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .module-icon.listening {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+
+        .module-icon.speaking {
+            background: #ffedd5;
+            color: #ea580c;
+        }
+
+        .module-icon.writing {
+            background: #dcfce7;
+            color: #059669;
+        }
 
         .module-name {
             font-size: 1.3rem;
@@ -141,11 +180,13 @@
             justify-content: space-between;
             align-items: center;
         }
+
         .score-value {
             font-size: 2.5rem;
             font-weight: 800;
             color: #1e293b;
         }
+
         .score-cefr {
             background: #f1f5f9;
             padding: 8px 20px;
@@ -161,21 +202,35 @@
             margin-top: 15px;
             overflow: hidden;
         }
+
         .score-bar .fill {
             height: 100%;
             border-radius: 10px;
             transition: width 1s ease;
         }
-        .score-bar .fill.reading { background: linear-gradient(90deg, #2563eb, #3b82f6); }
-        .score-bar .fill.listening { background: linear-gradient(90deg, #7c3aed, #a855f7); }
-        .score-bar .fill.speaking { background: linear-gradient(90deg, #ea580c, #fb923c); }
-        .score-bar .fill.writing { background: linear-gradient(90deg, #059669, #10b981); }
+
+        .score-bar .fill.reading {
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+        }
+
+        .score-bar .fill.listening {
+            background: linear-gradient(90deg, #7c3aed, #a855f7);
+        }
+
+        .score-bar .fill.speaking {
+            background: linear-gradient(90deg, #ea580c, #fb923c);
+        }
+
+        .score-bar .fill.writing {
+            background: linear-gradient(90deg, #059669, #10b981);
+        }
 
         .action-buttons {
             display: flex;
             gap: 20px;
             justify-content: center;
         }
+
         .btn-action {
             padding: 16px 40px;
             border-radius: 12px;
@@ -188,14 +243,17 @@
             align-items: center;
             gap: 10px;
         }
+
         .btn-primary {
             background: linear-gradient(135deg, #2563eb, #3b82f6);
             color: white;
         }
+
         .btn-secondary {
             background: #f1f5f9;
             color: #475569;
         }
+
         .btn-action:hover {
             transform: translateY(-2px);
         }
@@ -207,21 +265,25 @@
             border-radius: 20px;
             border: 2px solid #fcd34d;
         }
+
         .incomplete-message i {
             font-size: 4rem;
             color: #f59e0b;
             margin-bottom: 20px;
         }
+
         .incomplete-message h2 {
             color: #92400e;
             margin-bottom: 10px;
         }
+
         .incomplete-message p {
             color: #b45309;
             margin-bottom: 30px;
         }
     </style>
 </head>
+
 <body>
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loading">
@@ -232,8 +294,9 @@
     <nav class="glass-nav">
         <div class="nav-content">
             <div class="logo-area" onclick="window.location.href='index.html'">
-                <div class="logo-icon"><i class="fa-solid fa-shapes"></i></div>
-                <span>Virtua<span class="gradient-text">Test</span></span>
+                <img src="logo.jpeg" alt="ZenithAI Logo" class="logo-img"
+                    style="height: 40px; width: 40px; border-radius: 8px; margin-right: 10px;">
+                <span>Zenith<span class="gradient-text">AI</span></span>
             </div>
             <div class="user-menu-container">
                 <button class="user-menu-btn" id="user-menu-btn" onclick="toggleUserMenu(event)">
@@ -252,7 +315,7 @@
 
     <main class="app-container">
         <div class="results-container">
-            
+
             <!-- Results Header -->
             <div class="results-header">
                 <h1><i class="fa-solid fa-trophy" style="color: #facc15;"></i> Assessment Complete!</h1>
@@ -331,7 +394,7 @@
             'writing': 'fa-pen-nib'
         };
 
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             if (!isLoggedIn()) {
                 window.location.href = 'login.html';
                 return;
@@ -350,7 +413,7 @@
         async function loadResults() {
             try {
                 const session = getCurrentSession();
-                
+
                 if (!session) {
                     showIncomplete('No test session found. Please start a new test.');
                     hideLoading();
@@ -372,7 +435,7 @@
 
             } catch (error) {
                 console.error('Error loading results:', error);
-                
+
                 // Fallback: localStorage'dan göster
                 const session = getCurrentSession();
                 if (session && session.is_completed) {
@@ -397,7 +460,7 @@
             // Ana skor kartı
             document.getElementById('cefr-level').textContent = result.overall_cefr_level || 'N/A';
             document.getElementById('overall-score').textContent = Math.round(result.overall_score || 0);
-            document.getElementById('cefr-description').textContent = 
+            document.getElementById('cefr-description').textContent =
                 cefrDescriptions[result.overall_cefr_level] || 'Level description not available.';
 
             // Modül sonuçları
@@ -405,7 +468,7 @@
             grid.innerHTML = '';
 
             const moduleResults = result.module_results || [];
-            
+
             moduleResults.forEach(mod => {
                 const card = document.createElement('div');
                 card.className = 'module-result-card';
@@ -440,7 +503,7 @@
 
             document.getElementById('cefr-level').textContent = session.overall_cefr_level || 'B1';
             document.getElementById('overall-score').textContent = Math.round(session.overall_score || 0);
-            document.getElementById('cefr-description').textContent = 
+            document.getElementById('cefr-description').textContent =
                 cefrDescriptions[session.overall_cefr_level] || cefrDescriptions['B1'];
 
             // Placeholder modül sonuçları
@@ -480,7 +543,7 @@
             const proceed = await showConfirm('Start New Test', 'Starting a new test will reset your current progress. Continue?');
             if (proceed) {
                 localStorage.removeItem('current_session');
-                
+
                 try {
                     await apiStartTest();
                     window.location.href = 'index.html';
@@ -495,4 +558,5 @@
         }
     </script>
 </body>
+
 </html>

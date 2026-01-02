@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingAI - Login & Assessment</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>ZenithAI - Login & Assessment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -23,8 +25,8 @@
 
         body {
             background-color: var(--bg-color);
-            background-image: radial-gradient(at 0% 0%, rgba(43, 87, 255, 0.05) 0, transparent 50%), 
-                              radial-gradient(at 100% 100%, rgba(118, 75, 162, 0.05) 0, transparent 50%);
+            background-image: radial-gradient(at 0% 0%, rgba(43, 87, 255, 0.05) 0, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(118, 75, 162, 0.05) 0, transparent 50%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -51,7 +53,8 @@
         .auth-header img {
             width: 180px;
             margin-bottom: 15px;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05));
+            border-radius: 12px;
         }
 
         .auth-header p {
@@ -131,7 +134,7 @@
             box-shadow: 0 0 0 4px rgba(43, 87, 255, 0.1);
         }
 
-        .form-group input:focus + i {
+        .form-group input:focus+i {
             color: #2b57ff;
         }
 
@@ -172,31 +175,62 @@
             text-align: center;
         }
 
-        .error-message.show { display: block; animation: shake 0.5s; }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s;
         }
 
-        form { display: none; }
-        form.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        form {
+            display: none;
+        }
+
+        form.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div class="auth-card">
         <div class="auth-header">
-            <img src="logo.jpg?v=2" alt="LingAI Logo">
-            <p>AI Powered English Assessment</p>
+            <img src="logo.jpeg" alt="ZenithAI Logo"
+                style="height: 60px; width: 60px; object-fit: cover; border-radius: 12px; margin-bottom: 10px;">
+            <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 5px; color: #1e293b;">Zenith<span
+                    style="background: linear-gradient(90deg, #2563eb, #7c3aed); -webkit-background-clip: text; background-clip: text; color: transparent;">AI</span>
+            </h2>
+            <p>AI Powered English Level Assessment</p>
         </div>
-        
+
         <div class="auth-tabs">
             <button class="auth-tab active" onclick="switchTab('login')">Login</button>
             <button class="auth-tab" onclick="switchTab('register')">Register</button>
@@ -263,7 +297,7 @@
             const tabs = document.querySelectorAll('.auth-tab');
             const loginForm = document.getElementById('login-form');
             const registerForm = document.getElementById('register-form');
-            
+
             hideError();
 
             if (type === 'login') {
@@ -294,11 +328,11 @@
             const btn = document.getElementById('login-btn');
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
-            
+
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Checking...';
             hideError();
-            
+
             try {
                 await apiLogin(email, password);
                 window.location.href = 'index.html';
@@ -315,11 +349,11 @@
             const name = document.getElementById('register-name').value;
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
-            
+
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
             hideError();
-            
+
             try {
                 await apiRegister(email, password, name);
                 window.location.href = 'index.html';
@@ -331,4 +365,5 @@
         }
     </script>
 </body>
+
 </html>
