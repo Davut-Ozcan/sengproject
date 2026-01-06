@@ -217,6 +217,70 @@
             }
         }
     </style>
+    <style>
+        /* New Auth Styles */
+        .role-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .role-btn:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+
+        .role-btn.active {
+            border-color: #2b57ff;
+            background: #eff6ff;
+            color: #2b57ff;
+            box-shadow: 0 4px 12px rgba(43, 87, 255, 0.15);
+        }
+
+        .auth-footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .link-text {
+            color: #2b57ff;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .link-text:hover {
+            color: #1e40af;
+            text-decoration: underline;
+        }
+
+        .form-title {
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 25px;
+            margin-top: 5px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
 </head>
 
 <body>
@@ -231,13 +295,16 @@
             <p>AI Powered English Level Assessment</p>
         </div>
 
-        <div class="auth-tabs">
-            <button class="auth-tab active" onclick="switchTab('login')">Login</button>
-            <button class="auth-tab" onclick="switchTab('register')">Register</button>
+        <!-- Role Selector -->
+        <h3 class="form-title">Login</h3>
+        <div class="role-selector">
+            <button class="role-btn active" onclick="toggleRole('student')">User</button>
+            <button class="role-btn" onclick="toggleRole('admin')">Admin</button>
         </div>
 
         <div id="error-box" class="error-message"></div>
 
+        <!-- Login Form -->
         <form id="login-form" class="active" onsubmit="handleLogin(event)">
             <div class="form-group">
                 <label>Email Address</label>
@@ -256,8 +323,14 @@
             <button type="submit" class="btn-auth" id="login-btn">
                 Login <i class="fa-solid fa-arrow-right-to-bracket"></i>
             </button>
+
+            <div class="auth-footer">
+                Don't have an account? <span class="link-text" id="reg-link-text"
+                    onclick="toggleView('register')">Register as User</span>
+            </div>
         </form>
 
+        <!-- Register Form -->
         <form id="register-form" onsubmit="handleRegister(event)">
             <div class="form-group">
                 <label>Full Name</label>
@@ -283,6 +356,10 @@
             <button type="submit" class="btn-auth" id="register-btn">
                 Create Account <i class="fa-solid fa-user-plus"></i>
             </button>
+
+            <div class="auth-footer">
+                Already have an account? <span class="link-text" onclick="toggleView('login')">Login</span>
+            </div>
         </form>
     </div>
 
@@ -293,23 +370,46 @@
             window.location.href = 'index.html';
         }
 
-        function switchTab(type) {
-            const tabs = document.querySelectorAll('.auth-tab');
+        let currentRole = 'student';
+
+        function toggleRole(role) {
+            currentRole = role;
+            const buttons = document.querySelectorAll('.role-btn');
+
+            if (role === 'student') {
+                buttons[0].classList.add('active');
+                buttons[1].classList.remove('active');
+                document.getElementById('reg-link-text').textContent = "Register as User";
+            } else {
+                buttons[1].classList.add('active');
+                buttons[0].classList.remove('active');
+                document.getElementById('reg-link-text').textContent = "Register as Admin";
+            }
+        }
+
+        function toggleView(view) {
             const loginForm = document.getElementById('login-form');
             const registerForm = document.getElementById('register-form');
+            const roleSelector = document.querySelector('.role-selector');
+            const headerTitle = document.querySelector('h3');
 
             hideError();
 
-            if (type === 'login') {
-                tabs[0].classList.add('active');
-                tabs[1].classList.remove('active');
+            if (view === 'login') {
                 loginForm.classList.add('active');
                 registerForm.classList.remove('active');
+                roleSelector.style.display = 'flex';
+                headerTitle.textContent = 'Login';
             } else {
-                tabs[1].classList.add('active');
-                tabs[0].classList.remove('active');
                 registerForm.classList.add('active');
                 loginForm.classList.remove('active');
+                roleSelector.style.display = 'none';
+
+                if (currentRole === 'student') {
+                    headerTitle.textContent = 'User Registration';
+                } else {
+                    headerTitle.textContent = 'Admin Registration';
+                }
             }
         }
 
@@ -334,10 +434,15 @@
             hideError();
 
             try {
-                await apiLogin(email, password);
-                window.location.href = 'index.html';
+                if (currentRole === 'admin') {
+                    await apiLogin(email, password);
+                    window.location.href = 'admin.html'; // Redirect to admin dashboard
+                } else {
+                    await apiLogin(email, password);
+                    window.location.href = 'index.html';
+                }
             } catch (error) {
-                showError(error.message || "Giriş başarısız.");
+                showError(error.message || "Login failed");
                 btn.disabled = false;
                 btn.innerHTML = 'Login <i class="fa-solid fa-arrow-right-to-bracket"></i>';
             }
@@ -358,7 +463,7 @@
                 await apiRegister(email, password, name);
                 window.location.href = 'index.html';
             } catch (error) {
-                showError(error.message || "Kayıt sırasında bir hata oluştu.");
+                showError(error.message || "Register failed");
                 btn.disabled = false;
                 btn.innerHTML = 'Create Account <i class="fa-solid fa-user-plus"></i>';
             }
