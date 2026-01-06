@@ -95,13 +95,15 @@ class AIEngineService:
         elif skill == "Listening":
             prompt = (
                 f"{base_prompt} "
-                f"Create a spoken script. Include a 'script' field. "
+                f"Create a spoken script formatted as a MONOLOGUE (e.g., a news report, a lecture, or a storytelling session). "
+                f"DO NOT use dialogues or interviews with multiple speakers. "
+                f"Include a 'script' field. "
                 f"Include a 'questions' list with 3 items. "
                 f"Each question MUST have: "
-                f"'question_text', "
-                f"'options' (list of 4 strings), "
-                f"'correct_answer' (index 0-3 as integer), "
-                f"'weight' (integer between 10-50)."
+                f"1. 'question_text', "
+                f"2. 'options', "
+                f"3. 'correct_answer', "
+                f"4. 'weight' (integer between 10-50 based on difficulty). "
             )
 
         elif skill == "Writing":
