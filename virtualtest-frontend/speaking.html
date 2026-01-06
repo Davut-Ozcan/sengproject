@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speaking Module - VirtuaTest</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Speaking Module - ZenithAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
         .loading-overlay {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(255, 255, 255, 0.95);
             display: flex;
             flex-direction: column;
@@ -19,15 +23,26 @@
             justify-content: center;
             z-index: 9999;
         }
-        .loading-overlay.hidden { display: none; }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+
         .loading-spinner {
-            width: 60px; height: 60px;
+            width: 60px;
+            height: 60px;
             border: 4px solid #e2e8f0;
             border-top-color: #ea580c;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
         .loading-text {
             margin-top: 20px;
             font-size: 1.2rem;
@@ -38,10 +53,12 @@
         .topic-selection {
             padding: 40px;
         }
+
         .topic-header {
             text-align: center;
             margin-bottom: 40px;
         }
+
         .topic-header h2 {
             font-size: 2rem;
             color: #1e293b;
@@ -64,13 +81,16 @@
             cursor: pointer;
             transition: all 0.3s;
         }
+
         .topic-card:hover {
             transform: translateY(-8px);
             border-color: #ea580c;
             box-shadow: 0 15px 30px rgba(234, 88, 12, 0.15);
         }
+
         .topic-card .icon {
-            width: 60px; height: 60px;
+            width: 60px;
+            height: 60px;
             background: #ffedd5;
             border-radius: 16px;
             display: flex;
@@ -80,11 +100,13 @@
             color: #ea580c;
             margin-bottom: 20px;
         }
+
         .topic-card h3 {
             font-size: 1.2rem;
             color: #1e293b;
             margin-bottom: 10px;
         }
+
         .topic-card p {
             color: #64748b;
             font-size: 0.95rem;
@@ -96,6 +118,7 @@
             padding: 40px;
             text-align: center;
         }
+
         .recording-section.active {
             display: block;
         }
@@ -106,12 +129,13 @@
             background: white;
             border-radius: 24px;
             padding: 50px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         }
 
         .topic-display {
             margin-bottom: 40px;
         }
+
         .topic-display h2 {
             font-size: 1.8rem;
             color: #1e293b;
@@ -139,15 +163,25 @@
             transition: all 0.3s;
             box-shadow: 0 10px 30px rgba(234, 88, 12, 0.4);
         }
+
         .mic-btn:hover {
             transform: scale(1.05);
         }
+
         .mic-btn.recording {
             animation: pulse-mic 1.5s infinite;
         }
+
         @keyframes pulse-mic {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4); }
-            50% { box-shadow: 0 0 0 20px rgba(234, 88, 12, 0); }
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 0 20px rgba(234, 88, 12, 0);
+            }
         }
 
         .recording-status {
@@ -156,6 +190,7 @@
             font-weight: 600;
             margin: 20px 0;
         }
+
         .recording-time {
             font-family: monospace;
             font-size: 2rem;
@@ -175,11 +210,13 @@
             transition: all 0.3s;
             display: none;
         }
+
         .btn-submit.show {
             display: inline-flex;
             align-items: center;
             gap: 10px;
         }
+
         .btn-submit:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(220, 38, 38, 0.3);
@@ -193,19 +230,23 @@
             margin-top: 30px;
             text-align: left;
         }
+
         .instructions h4 {
             color: #c2410c;
             margin-bottom: 10px;
         }
+
         .instructions ul {
             color: #ea580c;
             padding-left: 20px;
         }
+
         .instructions li {
             margin-bottom: 5px;
         }
     </style>
 </head>
+
 <body>
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loading">
@@ -215,9 +256,10 @@
 
     <nav class="glass-nav">
         <div class="nav-content">
-            <div class="logo-area">
-                <div class="logo-icon"><i class="fa-solid fa-shapes"></i></div>
-                <span>Virtua<span class="gradient-text">Test</span></span>
+            <div class="logo-area" onclick="window.location.href='index.html'">
+                <img src="logo.jpeg" alt="ZenithAI Logo" class="logo-img"
+                    style="height: 40px; width: 40px; border-radius: 8px; margin-right: 10px;">
+                <span>Zenith<span class="gradient-text">AI</span></span>
             </div>
             <div class="user-menu-container">
                 <button class="user-menu-btn" id="user-menu-btn" onclick="toggleUserMenu(event)">
@@ -258,7 +300,7 @@
                 <div class="recording-section" id="recording-section">
                     <div class="recording-container">
                         <span class="tag t-bg-orange">Your Topic</span>
-                        
+
                         <div class="topic-display">
                             <h2 id="selected-topic-text">"Topic will appear here"</h2>
                         </div>
@@ -323,7 +365,7 @@
         let recordingSeconds = 0;
         const MAX_RECORDING_TIME = 120; // 2 dakika
 
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             if (!isLoggedIn()) {
                 window.location.href = 'login.html';
                 return;
@@ -369,7 +411,7 @@
             const grid = document.getElementById('topics-grid');
             grid.innerHTML = '';
 
-            const icons = ['fa-robot', 'fa-leaf', 'fa-users'];
+            const icons = ['fa-comment-dots', 'fa-microphone', 'fa-users'];
 
             topics.forEach((topic, index) => {
                 const card = document.createElement('div');
@@ -459,7 +501,7 @@
         function updateRecordingTime() {
             const mins = Math.floor(recordingSeconds / 60);
             const secs = recordingSeconds % 60;
-            document.getElementById('recording-time').textContent = 
+            document.getElementById('recording-time').textContent =
                 `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')} / 02:00`;
         }
 
@@ -474,7 +516,7 @@
 
             try {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                
+
                 const result = await apiSubmitModule(sessionId, 'speaking', {
                     topic: selectedTopic,
                     student_response: `[Audio recording - ${recordingSeconds} seconds]`,
@@ -509,7 +551,7 @@
                 timeLeft--;
                 const mins = Math.floor(timeLeft / 60);
                 const secs = timeLeft % 60;
-                document.getElementById('timer').textContent = 
+                document.getElementById('timer').textContent =
                     `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
                 if (timeLeft <= 0) {
@@ -531,4 +573,5 @@
         }
     </script>
 </body>
+
 </html>
