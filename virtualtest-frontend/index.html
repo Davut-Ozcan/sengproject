@@ -333,7 +333,7 @@
         </div>
     </div>
 
-    <script src="api.js"></script>
+    <!-- <script src="api.js"></script>
     <script>
         let currentSession = null;
 
@@ -443,6 +443,136 @@
                 return;
             }
 
+            window.location.href = 'total.html';
+        }
+
+        function handleLogout() {
+            showConfirm('Logout', 'Are you sure you want to logout?', function () {
+                apiLogout();
+            });
+        }
+    </script> -->
+    <script src="api.js"></script>
+    <script>
+        let currentSession = null;
+
+        // Sayfa yüklendiğinde çalışacak kısım
+        document.addEventListener('DOMContentLoaded', async function () {
+            
+            if (isLoggedIn()) {
+                // --- GİRİŞ YAPILMIŞSA ---
+                // Kullanıcı ismini göster ve testi yükle
+                updateUserDisplay();
+                await initializeTest();
+            } else {
+                // --- GİRİŞ YAPILMAMIŞSA ---
+                // Sağ üstteki butonu "Sign Up" butonuna dönüştür
+                const userBtn = document.getElementById('user-menu-btn');
+                const nameSpan = userBtn.querySelector('.u-name');
+                const arrowIcon = userBtn.querySelector('.fa-chevron-down');
+
+                // 1. Yazıyı değiştir
+                if(nameSpan) nameSpan.textContent = 'Sign Up';
+
+                // 2. Aşağı ok ikonunu gizle (Çünkü menü açılmayacak)
+                if(arrowIcon) arrowIcon.style.display = 'none';
+
+                // 3. Butona tıklayınca Login sayfasına gitmesini sağla (Menüyü açma fonksiyonunu eziyoruz)
+                userBtn.onclick = function() {
+                    window.location.href = 'login.html';
+                };
+            }
+        });
+
+        function updateUserDisplay() {
+            const user = getUser();
+            if (user) {
+                document.querySelectorAll('.u-name').forEach(el => {
+                    el.textContent = user.full_name || user.email;
+                });
+            }
+        }
+
+        async function initializeTest() {
+            try {
+                const session = await apiStartTest();
+                currentSession = session;
+                localStorage.setItem('current_session', JSON.stringify(session));
+
+                updateProgressUI(session);
+                updateModuleCards(session);
+
+            } catch (error) {
+                console.error('Test initialization error:', error);
+                // Token hatası varsa çıkış yap
+                if(error.message.includes('401')) {
+                    apiLogout(); 
+                }
+            }
+        }
+
+        function updateProgressUI(session) {
+            const completed = session.completed_modules || [];
+            const total = 4;
+            const percent = (completed.length / total) * 100;
+
+            if (completed.length > 0) {
+                document.getElementById('progress-info').style.display = 'flex';
+                document.getElementById('progress-text').textContent =
+                    `${completed.length} of ${total} modules completed`;
+                document.getElementById('progress-fill').style.width = `${percent}%`;
+            }
+
+            if (session.is_completed) {
+                document.getElementById('banner-title').textContent =
+                    `Your Score: ${session.overall_score?.toFixed(0) || 0} - Level ${session.overall_cefr_level || 'N/A'}`;
+                document.getElementById('banner-desc').textContent =
+                    'Click to view your detailed report!';
+            }
+        }
+
+        function updateModuleCards(session) {
+            const completed = session.completed_modules || [];
+            ['reading', 'listening', 'speaking', 'writing'].forEach(module => {
+                const card = document.getElementById(`card-${module}`);
+                if (completed.includes(module)) {
+                    card.classList.add('completed');
+                } else {
+                    card.classList.remove('completed');
+                }
+            });
+        }
+
+        async function startModule(moduleName) {
+            // Modüle tıklandığında giriş kontrolü
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (!currentSession) {
+                await initializeTest();
+                if(!currentSession) return;
+            }
+
+            if (currentSession.completed_modules?.includes(moduleName)) {
+                const proceed = await showConfirm('Module Completed', 'You have already completed this module. Do you want to continue anyway?');
+                if (!proceed) return;
+            }
+
+            localStorage.setItem('current_module', moduleName);
+            window.location.href = `${moduleName}.html`;
+        }
+
+        function viewResults() {
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+            if (!currentSession || !currentSession.is_completed) {
+                showAlert('Incomplete Modules', 'You need to complete all modules to see the results!', 'warning');
+                return;
+            }
             window.location.href = 'total.html';
         }
 

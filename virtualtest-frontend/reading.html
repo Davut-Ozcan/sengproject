@@ -314,7 +314,7 @@
         </div>
     </div>
 
-    <script src="api.js"></script>
+    <!-- <script src="api.js"></script>
     <script>
         // Global değişkenler
         let moduleContent = null;
@@ -557,6 +557,325 @@
 
         function hideLoading() {
             document.getElementById('loading').classList.add('hidden');
+        }
+    </script> -->
+    <script src="api.js"></script>
+    <script>
+        // Global değişkenler
+        let moduleContent = null;
+        let questions = [];
+        let userAnswers = [];
+        let currentQuestionIndex = 0;
+        let sessionId = null;
+        let timerInterval = null;
+        let timeLeft = 20 * 60; // 20 dakika
+
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            updateUserDisplay();
+            await loadModuleContent();
+        });
+
+        function updateUserDisplay() {
+            const user = getUser();
+            if (user) {
+                const nameEl = document.querySelector('.u-name');
+                if(nameEl) nameEl.textContent = user.full_name || user.email;
+            }
+        }
+
+        async function loadModuleContent() {
+            try {
+                // Session bilgisini al
+                const session = getCurrentSession();
+                
+                // Session yoksa ana sayfaya at
+                if (!session) {
+                    await showAlert('Session Error', 'Session not found. Redirecting...', 'warning');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                // Session ID'yi güvenli bir şekilde al (id veya session_id olabilir)
+                sessionId = session.id || session.session_id;
+
+                if (!sessionId) {
+                     throw new Error("Invalid Session ID");
+                }
+
+                // Kullanıcıya bilgi ver (Uzun sürebilir)
+                showLoading('AI Generating Content...');
+
+                // AI'dan içerik al
+                console.log("Reading Modülü başlatılıyor, Session ID:", sessionId);
+                const response = await apiStartModule(sessionId, 'reading', 'B1');
+                
+                console.log("Backend'den gelen ham veri:", response); // Hata ayıklama için
+
+                // --- ÖNEMLİ DÜZELTME BURADA ---
+                // Veri yapısını kontrol et ve esnek davran
+                if (response.content) {
+                    // Beklenen format: { content: { text: "...", questions: [...] } }
+                    moduleContent = response.content;
+                } else if (response.text && response.questions) {
+                    // Alternatif format: { text: "...", questions: [...] }
+                    moduleContent = response;
+                } else {
+                    console.error("Tanınmayan veri formatı:", response);
+                    throw new Error("AI returned data in an unexpected format.");
+                }
+
+                // İçeriği göster
+                displayContent();
+                
+                // Timer'ı başlat (Sadece içerik geldikten sonra)
+                startTimer();
+                
+                hideLoading();
+
+            } catch (error) {
+                console.error('Content loading error:', error);
+                hideLoading();
+                
+                // Kullanıcıya hatayı göster ve Dashboard'a yönlendir
+                await showAlert('Loading Error', 'Failed to generate content: ' + (error.message || "Unknown error"), 'error');
+                window.location.href = 'index.html';
+            }
+        }
+
+        function displayContent() {
+            if (!moduleContent) {
+                console.error("Gösterilecek içerik yok!");
+                return;
+            }
+
+            // 1. Okuma metnini güncelle
+            document.getElementById('passage-title').textContent = moduleContent.title || 'Reading Passage';
+            
+            // Metin bazen paragraf array'i olarak, bazen tek string olarak gelebilir
+            let textHTML = '';
+            if (Array.isArray(moduleContent.text)) {
+                textHTML = moduleContent.text.map(p => `<p>${p}</p>`).join('');
+            } else {
+                textHTML = `<p>${moduleContent.text || 'No text available.'}</p>`;
+            }
+            document.getElementById('passage-content').innerHTML = textHTML;
+            
+            // 2. Soruları hazırla
+            questions = moduleContent.questions || [];
+            
+            if (questions.length === 0) {
+                document.getElementById('question-area').innerHTML = "<p>No questions generated.</p>";
+                return;
+            }
+
+            userAnswers = new Array(questions.length).fill(null);
+
+            // Soru navigasyonunu oluştur
+            createQuestionNav();
+
+            // İlk soruyu göster
+            showQuestion(0);
+        }
+
+        function createQuestionNav() {
+            const nav = document.getElementById('question-nav');
+            if(!nav) return;
+            nav.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const dot = document.createElement('div');
+                dot.className = 'q-dot' + (index === 0 ? ' active' : '');
+                dot.textContent = index + 1;
+                dot.onclick = () => goToQuestion(index);
+                nav.appendChild(dot);
+            });
+        }
+
+        function showQuestion(index) {
+            if (index < 0 || index >= questions.length) return;
+
+            currentQuestionIndex = index;
+            const question = questions[index];
+
+            // Soru metnini güncelle
+            document.getElementById('question-text').textContent =
+                `Question ${index + 1}: ${question.question_text}`;
+
+            // Seçenekleri göster
+            const optionsList = document.getElementById('options-list');
+            optionsList.innerHTML = '';
+
+            const letters = ['A', 'B', 'C', 'D'];
+            
+            // Seçenekler bazen obje bazen string array olabilir, kontrol et
+            let options = question.options;
+            if(!options && question.choices) options = question.choices; // Bazı AI'lar 'choices' der
+
+            if (options) {
+                options.forEach((option, optIndex) => {
+                    const div = document.createElement('div');
+                    div.className = 'option-item' + (userAnswers[index] === optIndex ? ' selected' : '');
+                    
+                    // Seçenek içeriği (eğer obje ise .text özelliğini al)
+                    const optionText = typeof option === 'object' ? option.text : option;
+
+                    div.innerHTML = `
+                        <span class="option-letter">${letters[optIndex] || '-'}</span>
+                        <span>${optionText}</span>
+                    `;
+                    div.onclick = () => selectOption(optIndex);
+                    optionsList.appendChild(div);
+                });
+            }
+
+            // Progress bar güncelle
+            const progress = ((index + 1) / questions.length) * 100;
+            const fill = document.getElementById('progress-fill');
+            if(fill) fill.style.width = `${progress}%`;
+
+            // Navigasyon noktalarını güncelle
+            document.querySelectorAll('.q-dot').forEach((dot, i) => {
+                dot.classList.remove('active');
+                if (i === index) dot.classList.add('active');
+                if (userAnswers[i] !== null) dot.classList.add('answered');
+            });
+
+            // Butonları güncelle
+            const prevBtn = document.getElementById('btn-prev');
+            const nextBtn = document.getElementById('btn-next');
+            const submitBtn = document.getElementById('btn-submit');
+
+            if(prevBtn) prevBtn.disabled = index === 0;
+
+            if (index === questions.length - 1) {
+                if(nextBtn) nextBtn.style.display = 'none';
+                if(submitBtn) submitBtn.style.display = 'flex';
+            } else {
+                if(nextBtn) nextBtn.style.display = 'flex';
+                if(submitBtn) submitBtn.style.display = 'none';
+            }
+        }
+
+        function selectOption(optIndex) {
+            userAnswers[currentQuestionIndex] = optIndex;
+
+            // Seçili görünümü güncelle
+            document.querySelectorAll('.option-item').forEach((item, i) => {
+                item.classList.toggle('selected', i === optIndex);
+            });
+
+            // Nav dot'u güncelle
+            const dots = document.querySelectorAll('.q-dot');
+            if(dots[currentQuestionIndex]) dots[currentQuestionIndex].classList.add('answered');
+        }
+
+        function goToQuestion(index) {
+            showQuestion(index);
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                showQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                showQuestion(currentQuestionIndex + 1);
+            }
+        }
+
+        async function submitAnswers() {
+            const unanswered = userAnswers.filter(a => a === null).length;
+            if (unanswered > 0) {
+                const proceed = await showConfirm('Unanswered Questions', `${unanswered} questions unanswered. Submit anyway?`);
+                if (!proceed) return;
+            }
+
+            showLoading('Submitting answers...');
+
+            try {
+                // Doğru cevapları ve ağırlıkları hazırla
+                // Backend'den gelen veriye göre 'answer' veya 'correct_answer' olabilir
+                const correctAnswers = questions.map(q => {
+                    // String "A", "B" mi yoksa index 0, 1 mi? Kontrol et
+                    // Basitlik için backend'in index beklediğini varsayıyoruz.
+                    // Eğer backend harf bekliyorsa dönüşüm gerekebilir.
+                    return q.correct_answer !== undefined ? q.correct_answer : q.answer;
+                });
+                
+                const weights = questions.map(q => q.weight || (100 / questions.length));
+
+                const result = await apiSubmitModule(sessionId, 'reading', {
+                    user_answers: userAnswers,
+                    correct_answers: correctAnswers,
+                    weights: weights
+                });
+
+                clearInterval(timerInterval);
+
+                await showAlert('Reading Completed!', `Score: ${result.score?.toFixed(1) || 0}/100\nLevel: ${result.cefr_level || 'N/A'}`, 'success');
+
+                // Session'ı güncelle
+                const session = getCurrentSession();
+                if (session) {
+                    session.completed_modules = session.completed_modules || [];
+                    if (!session.completed_modules.includes('reading')) {
+                        session.completed_modules.push('reading');
+                    }
+                    localStorage.setItem('current_session', JSON.stringify(session));
+                }
+
+                window.location.href = 'index.html';
+
+            } catch (error) {
+                console.error('Submit error:', error);
+                await showAlert('Submission Error', 'Error submitting: ' + error.message, 'error');
+                hideLoading();
+            }
+        }
+
+        function startTimer() {
+            if(timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                const timerEl = document.getElementById('timer');
+                if(timerEl) {
+                     timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    showAlert('Time\'s Up!', 'Submitting automatically...', 'warning')
+                        .then(() => submitAnswers());
+                }
+            }, 1000);
+        }
+
+        function showLoading(text = 'Loading...') {
+            const loadingEl = document.getElementById('loading');
+            if (loadingEl) {
+                loadingEl.classList.remove('hidden');
+                const txt = loadingEl.querySelector('.loading-text');
+                if(txt) txt.textContent = text;
+            }
+        }
+
+        function hideLoading() {
+            const loadingEl = document.getElementById('loading');
+            if (loadingEl) {
+                loadingEl.classList.add('hidden');
+            }
         }
     </script>
 </body>
