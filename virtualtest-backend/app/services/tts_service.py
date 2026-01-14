@@ -4,10 +4,10 @@ import uuid
 
 
 class TextToSpeechService:
-    def convert_text_to_audio(self, text: str) -> str:
+    def convert_text_to_audio(self, text: str, slow: bool = False) -> str:
         """
         GÖREV: FR32 & FR1183 - Metni sese çevirir.
-        GİRDİ: Okunacak metin (Script).
+        GİRDİ: Okunacak metin (Script) ve Hız Ayarı (slow).
         ÇIKTI: Oluşturulan ses dosyasının yolu (Path).
         """
         try:
@@ -16,13 +16,13 @@ class TextToSpeechService:
                 return ""
 
             # 1. Ses dosyasını oluştur (Google Translate API kullanır)
-            # lang='en' dedik, İngilizce okuyacak.
-            # slow=False dedik, normal hızda okuyacak.
-            tts = gTTS(text=text, lang='en', slow=False)
+            # DÜZELTME: Artık dışarıdan gelen 'slow' parametresini kullanıyoruz.
+            tts = gTTS(text=text, lang='en', slow=slow)
 
             # 2. Kayıt Klasörünü Ayarla
             # Web projelerinde genelde 'static' klasörü dışarıya açıktır.
-            output_folder = "static/audio"
+            # Not: Windows/Linux yol farkı olmaması için os.path kullanıyoruz.
+            output_folder = os.path.join("static", "audio")
             os.makedirs(output_folder, exist_ok=True)  # Klasör yoksa oluşturur
 
             # 3. Benzersiz Dosya İsmi Üret (listening_a1b2c3d4.mp3 gibi)
