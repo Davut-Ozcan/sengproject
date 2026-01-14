@@ -340,9 +340,17 @@
         function updateUserDisplay() {
             const user = getUser();
             if (user) {
-                document.querySelector('.u-name').textContent = user.full_name || user.email;
-                document.getElementById('user-avatar').src =
-                    `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name || user.email)}&background=2563eb&color=fff`;
+                // İsim güncelleme kısmı kalsın
+                const nameElement = document.querySelector('.u-name');
+                if (nameElement) {
+                     nameElement.textContent = user.full_name || user.email;
+                }
+
+                // ✅ DÜZELTME: Önce "Böyle bir resim var mı?" diye soruyoruz
+                const avatarImg = document.getElementById('user-avatar');
+                if (avatarImg) {
+                    avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name || user.email)}&background=2563eb&color=fff`;
+                }
             }
         }
 

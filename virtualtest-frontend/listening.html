@@ -586,7 +586,31 @@
             showLoading('Submitting answers...');
 
             try {
-                const correctAnswers = questions.map(q => q.correct_answer);
+                // ✅ YENİ (AKILLI) HALİ:
+                // AI bazen cevabı "Metin" olarak, bazen "Sayı" olarak veriyor.
+                // Biz burada hepsini Backend'in sevdiği "Sayı"ya (Index) çeviriyoruz.
+                const correctAnswers = questions.map(q => {
+                    // Durum 1: AI zaten sayı vermiş (0, 1, 2) -> Aynen kullan.
+                    if (typeof q.correct_answer === 'number') {
+                        return q.correct_answer;
+                    }
+
+                    // Durum 2: AI metin vermiş ("To enhance...") -> Şıkların içinde ara ve sırasını bul.
+                    if (typeof q.correct_answer === 'string') {
+                        // Şıkkı bul (Boşlukları temizleyerek karşılaştır)
+                        const index = q.options.findIndex(opt =>
+                            opt.trim() === q.correct_answer.trim() || // Tam eşleşme
+                            opt.includes(q.correct_answer) ||         // İçinde geçiyor mu?
+                            q.correct_answer.includes(opt)            // Tersine kontrol
+                        );
+
+                        // Bulduysan o sayıyı döndür, bulamadıysan 0 (ilk şık) varsay.
+                        return index !== -1 ? index : 0;
+                    }
+
+                    // Ne olduğunu anlamadık, 0 dönelim patlamasın.
+                    return 0;
+                });
                 const weights = questions.map(q => q.weight || 33);
 
                 const result = await apiSubmitModule(sessionId, 'listening', {
