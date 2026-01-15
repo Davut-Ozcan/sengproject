@@ -303,18 +303,15 @@
 </head>
 
 <body>
-
     <nav class="glass-nav">
         <div class="nav-content">
-            <div class="logo-area" onclick="window.location.href='index.html'">
-                <img src="logo.jpeg" alt="ZenithAI Logo" class="logo-img"
-                    style="height: 40px; width: 40px; border-radius: 8px; margin-right: 10px;">
+            <div class="logo-area" onclick="window.location.href='index.html'" style="cursor:pointer">
+                <img src="logo.jpeg" alt="Logo" class="logo-img" style="height: 40px; border-radius: 8px;">
                 <span>Zenith<span class="gradient-text">AI</span></span>
             </div>
             <div class="user-menu-container">
                 <button class="user-menu-btn" id="admin-user-btn">
-                    <i class="fa-solid fa-circle-user"></i> <span>Admin View</span> <i
-                        class="fa-solid fa-chevron-down"></i>
+                    <i class="fa-solid fa-circle-user"></i> <span>Admin Panel</span> <i class="fa-solid fa-chevron-down"></i>
                 </button>
                 <div class="user-menu-dropdown" id="admin-dropdown">
                     <button class="dropdown-item logout" onclick="handleLogout()">
@@ -325,284 +322,225 @@
         </div>
     </nav>
 
-    <main class="app-container admin-hub-container">
-
-        <!-- <div class="summary-grid">
+    <main class="app-container">
+        <div class="summary-grid">
             <div class="summary-card">
                 <div class="icon-box i-blue"><i class="fa-solid fa-users"></i></div>
-                <div class="stats-info"><small>Total Users</small><strong>1,284</strong></div>
+                <div class="stats-info"><small>Total Users</small><strong id="stat-total-users">...</strong></div>
             </div>
             <div class="summary-card">
-                <div class="icon-box i-purple"><i class="fa-solid fa-chart-line"></i></div>
-                <div class="stats-info"><small>Tests Run</small><strong>854</strong></div>
+                <div class="icon-box i-purple"><i class="fa-solid fa-user-shield"></i></div>
+                <div class="stats-info"><small>Total Admins</small><strong id="stat-total-admins">...</strong></div>
             </div>
             <div class="summary-card">
                 <div class="icon-box i-orange"><i class="fa-solid fa-robot"></i></div>
-                <div class="stats-info"><small>AI Engine</small><strong>Active</strong></div>
+                <div class="stats-info"><small>AI Engine</small><strong id="stat-ai-status">Checking...</strong></div>
             </div>
             <div class="summary-card">
-                <div class="icon-box i-green"><i class="fa-solid fa-award"></i></div>
-                <div class="stats-info"><small>Avg. CEFR</small><strong>B2 High</strong></div>
+                <div class="icon-box i-green"><i class="fa-solid fa-bolt"></i></div>
+                <div class="stats-info"><small>System Status</small><strong id="stat-active-users">Healthy</strong></div>
             </div>
-        </div> -->
-            <div class="summary-grid">
-            <div class="summary-card">
-            <div class="icon-box i-blue"><i class="fa-solid fa-users"></i></div>
-            <div class="stats-info"><small>Total Users</small><strong id="stat-total-users">...</strong></div>
-        </div>
-            <div class="summary-card">
-            <div class="icon-box i-purple"><i class="fa-solid fa-chart-line"></i></div>
-            <div class="stats-info"><small>Total Admins</small><strong id="stat-total-admins">...</strong></div>
-        </div>
-            <div class="summary-card">
-            <div class="icon-box i-orange"><i class="fa-solid fa-robot"></i></div>
-            <div class="stats-info"><small>AI Engine</small><strong id="stat-ai-status">Checking...</strong></div>
-         </div>
-            <div class="summary-card">
-               <div class="icon-box i-green"><i class="fa-solid fa-award"></i></div>
-               <div class="stats-info"><small>Active Users</small><strong id="stat-active-users">...</strong></div>
-            </div>
-        </div>       
-        <div class="admin-tabs">
-            <button class="tab-btn active" onclick="showPanel('users')">
-                <i class="fa-solid fa-user-shield"></i> User Management
-            </button>
-            <button class="tab-btn" onclick="showPanel('config')">
-                <i class="fa-solid fa-sliders"></i> Test Configuration
-            </button>
-            <button class="tab-btn" onclick="showPanel('ai')">
-                <i class="fa-solid fa-brain"></i> AI Integrity
-            </button>
-            <button class="tab-btn" onclick="showPanel('reports')">
-                <i class="fa-solid fa-file-invoice"></i> Student Reports
-            </button>
         </div>
 
-        <!-- <div id="users" class="tab-panel">
-            <div class="section-header"
-                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                <h2 style="font-size: 1.4rem;">User Oversight</h2>
-                <button class="btn-admin-primary"><i class="fa-solid fa-user-plus"></i> Create New Account</button>
-            </div>
-            <div class="list-topics" style="max-width: 100%; margin-top: 20px;">
-                <div class="list-item" style="cursor: default; padding: 15px 25px;">
-                    <div style="flex: 2;">
-                        <strong>Sinem ADALAN</strong>
-                        <div class="user-email">sinem.adalan@virtuatest.com</div>
-                    </div>
-                    <div style="flex: 1;"><span class="pill">Student</span></div>
-                    <div style="flex: 1;"><span class="tag t-bg-blue">ACTIVE</span></div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-back" style="padding: 8px;"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn-back" style="padding: 8px; color: var(--red);"><i
-                                class="fa-solid fa-ban"></i></button>
-                    </div>
-                </div>
-            </div>
-        </div> -->
+        <div class="admin-tabs">
+            <button class="tab-btn active" onclick="showPanel('users')"><i class="fa-solid fa-users-gear"></i> User Management</button>
+            <button class="tab-btn" onclick="showPanel('config')"><i class="fa-solid fa-sliders"></i> Test Configuration</button>
+            <button class="tab-btn" onclick="showPanel('reports')"><i class="fa-solid fa-file-contract"></i> Student Reports</button>
+        </div>
+
         <div id="users" class="tab-panel">
-    <div class="section-header"
-        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-        <h2 style="font-size: 1.4rem;">User Oversight</h2>
-        <button class="btn-admin-primary"><i class="fa-solid fa-user-plus"></i> Create New Account</button>
-    </div>
-    
-    <div class="list-topics" id="user-list-container" style="max-width: 100%; margin-top: 20px;">
-        <p style="text-align: center; color: #94a3b8;">Loading user data...</p>
-      </div>
-   </div>
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h2 style="font-size: 1.4rem;">User Oversight</h2>
+                <button class="btn-admin-primary" onclick="alert('Feature coming soon!')"><i class="fa-solid fa-user-plus"></i> Add User</button>
+            </div>
+            <div class="list-topics" id="user-list-container">
+                <p style="text-align: center; color: #94a3b8;">Loading user database...</p>
+            </div>
+        </div>
 
         <div id="config" class="tab-panel hidden">
-            <div class="section-header"
-                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                 <div>
                     <h2 style="font-size: 1.4rem;">Module Parameters</h2>
-                    <p style="font-size: 0.9rem; color: #64748b;">Set time limits and AI constraints</p>
+                    <p style="font-size: 0.9rem; color: #64748b;">Configure AI difficulty and time constraints</p>
                 </div>
-                <button class="btn-admin-success"><i class="fa-solid fa-floppy-disk"></i> Save All Configs</button>
+                <button class="btn-admin-success" onclick="handleSaveConfigs()">
+                    <i class="fa-solid fa-floppy-disk"></i> Save All Configs
+                </button>
             </div>
 
-            <div class="module-config-card card-reading">
-                <h3><i class="fa-solid fa-book-open"></i> Reading Settings</h3>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-                    <div><label>Time Limit (Min)</label><input type="number" class="admin-input" value="20"></div>
-                    <div><label>Questions</label><input type="number" class="admin-input" value="5"></div>
-                    <div><label>AI Generation</label><select class="admin-input">
-                            <option>Dynamic</option>
-                            <option>Fixed</option>
-                        </select></div>
-                </div>
-            </div>
-
-            <div class="module-config-card card-listening">
-                <h3><i class="fa-solid fa-headphones"></i> Listening Settings</h3>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-                    <div><label>Time Limit (Min)</label><input type="number" class="admin-input" value="15"></div>
-                    <div><label>Audio Plays</label><input type="number" class="admin-input" value="2"></div>
-                    <div><label>Question Density</label><input type="number" class="admin-input" value="3"></div>
+            <div class="module-config-card">
+                <h3><i class="fa-solid fa-gears"></i> Global AI Settings</h3>
+                <div style="margin-top:15px;">
+                    <label style="font-weight:700; display:block; margin-bottom:8px;">Default AI Difficulty (CEFR)</label>
+                    <select class="admin-input" id="ai-difficulty">
+                        <option value="A1">A1 - Beginner</option>
+                        <option value="A2">A2 - Elementary</option>
+                        <option value="B1">B1 - Intermediate</option>
+                        <option value="B2">B2 - Upper Intermediate</option>
+                        <option value="C1">C1 - Advanced</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="module-config-card card-writing">
-                <h3><i class="fa-solid fa-pen-nib"></i> Writing Settings</h3>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-                    <div><label>Time Limit (Min)</label><input type="number" class="admin-input" value="30"></div>
-                    <div><label>Min Words</label><input type="number" class="admin-input" value="150"></div>
-                    <div><label>Max Words</label><input type="number" class="admin-input" value="400"></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="module-config-card" style="border-left-color: var(--blue);">
+                    <label>Reading Time (Seconds)</label>
+                    <input type="number" id="time-reading" class="admin-input" value="1200">
                 </div>
-            </div>
-
-            <div class="module-config-card card-speaking">
-                <h3><i class="fa-solid fa-microphone-lines"></i> Speaking Settings</h3>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-                    <div><label>Time Limit (Min)</label><input type="number" class="admin-input" value="10"></div>
-                    <div><label>Max Record (Sec)</label><input type="number" class="admin-input" value="120"></div>
-                    <div><label>AI Complexity</label><select class="admin-input">
-                            <option>Standard</option>
-                            <option>Academic</option>
-                        </select></div>
+                <div class="module-config-card" style="border-left-color: var(--purple);">
+                    <label>Listening Time (Seconds)</label>
+                    <input type="number" id="time-listening" class="admin-input" value="840">
                 </div>
-            </div>
-        </div>
-
-        <div id="ai" class="tab-panel hidden">
-            <h2 style="margin-bottom: 20px;">AI Integrity Protocol</h2>
-            <div class="list-item" style="background: #f8fafc; border: none; padding: 25px;">
-                <div class="icon-box i-purple"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-                <div style="flex: 1;">
-                    <strong>Automatic Secondary Verification</strong>
-                    <p style="font-size: 0.9rem; color: #64748b;">Perform automated consistency checks on transcripts
-                        before final CEFR grading.</p>
+                <div class="module-config-card" style="border-left-color: var(--green);">
+                    <label>Writing Time (Seconds)</label>
+                    <input type="number" id="time-writing" class="admin-input" value="2400">
                 </div>
-                <input type="checkbox" checked style="width: 25px; height: 25px; accent-color: var(--purple);">
+                <div class="module-config-card" style="border-left-color: var(--orange);">
+                    <label>Speaking Time (Seconds)</label>
+                    <input type="number" id="time-speaking" class="admin-input" value="180">
+                </div>
             </div>
         </div>
 
         <div id="reports" class="tab-panel hidden">
-            <h2>Detailed Student Analytics</h2>
-            <div
-                style="margin-top: 40px; border: 2px dashed #e2e8f0; border-radius: 20px; padding: 60px; text-align: center; color: #94a3b8;">
+            <h2 style="margin-bottom: 20px;">Detailed Student Analytics</h2>
+            <div style="margin-top: 40px; border: 2px dashed #e2e8f0; border-radius: 20px; padding: 60px; text-align: center; color: #94a3b8;">
                 <i class="fa-solid fa-magnifying-glass-chart" style="font-size: 3rem; margin-bottom: 20px;"></i>
-                <p>Select a student account to view individual skill scores and overall CEFR levels.</p>
+                <p>Select a student account from User Management to view transcripts and CEFR logs.</p>
             </div>
         </div>
-
     </main>
 
-    <!-- <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const userBtn = document.getElementById('admin-user-btn');
-            const dropdown = document.getElementById('admin-dropdown');
-
-            userBtn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                dropdown.classList.toggle('show');
-            });
-
-            document.addEventListener('click', () => dropdown.classList.remove('show'));
-            dropdown.addEventListener('click', (e) => e.stopPropagation());
-        });
-
-        function showPanel(panelId) {
-            document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(panelId).classList.remove('hidden');
-            if (event && event.currentTarget) event.currentTarget.classList.add('active');
-        }
-
-        function handleLogout() {
-            window.location.href = 'login.html';
-        }
-    </script> -->
     <script src="api.js"></script>
     <script>
+        // --- GLOBAL INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', async function () {
-            // 1. Giriş kontrolü (api.js'deki fonksiyonu kullandık)
-            if (!isLoggedIn()) {
-                window.location.href = 'login.html';
-                return;
-            }
+            if (!isLoggedIn()) { window.location.href = 'login.html'; return; }
 
-            // 2. Admin Verilerini Çek
+            // Load initial dashboard data
             await loadStats();
             await loadUsers();
 
-            // 3. Dropdown Menu
+            // UI Dropdown logic
             const userBtn = document.getElementById('admin-user-btn');
             const dropdown = document.getElementById('admin-dropdown');
-
             if (userBtn) {
-                userBtn.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    dropdown.classList.toggle('show');
-                });
+                userBtn.addEventListener('click', (e) => { e.stopPropagation(); dropdown.classList.toggle('show'); });
             }
-
-            document.addEventListener('click', () => {
-                if (dropdown) dropdown.classList.remove('show');
-            });
+            document.addEventListener('click', () => dropdown?.classList.remove('show'));
         });
 
-        // --- İstatistikleri Çekme Fonksiyonu ---
+        // --- NAVIGATION LOGIC ---
+        function showPanel(panelId) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(panelId).classList.remove('hidden');
+            event.currentTarget.classList.add('active');
+
+            // Load configuration values if config tab is opened
+            if (panelId === 'config') loadConfig();
+        }
+
+        // --- DATA FETCHING (FR51: Stats) ---
         async function loadStats() {
             try {
-                // ARTIK TEK SATIRDA ÇEKİYORUZ!
-                const data = await apiAdminGetStats();
-                
+                const data = await apiAdminGetStats(); // api.js
                 document.getElementById('stat-total-users').textContent = data.total_users;
                 document.getElementById('stat-total-admins').textContent = data.total_admins;
-                document.getElementById('stat-active-users').textContent = data.active_users;
                 document.getElementById('stat-ai-status').textContent = data.ai_status;
             } catch (error) {
-                console.error("Stats error:", error);
-                if(error.message === "Unauthorized") {
-                    alert("Erişim Reddedildi: Admin değilsiniz!");
-                    window.location.href = 'index.html';
-                }
+                console.error("Stats load failed:", error);
             }
         }
 
-        // --- Kullanıcı Listesini Çekme Fonksiyonu ---
+        // --- USER OVERSIGHT (FR8, FR9) ---
         async function loadUsers() {
+            const container = document.getElementById('user-list-container');
             try {
-                // ARTIK TEK SATIRDA ÇEKİYORUZ!
-                const users = await apiAdminGetUsers();
-                const container = document.getElementById('user-list-container');
-
+                const users = await apiAdminGetUsers(); // api.js
                 container.innerHTML = ''; 
-
-                if(users.length === 0) {
-                    container.innerHTML = '<p style="text-align:center;">Hiç kullanıcı bulunamadı.</p>';
-                    return;
-                }
-
+                
                 users.forEach(u => {
                     const html = `
-                    <div class="list-item" style="cursor: default; padding: 15px 25px;">
+                    <div class="list-item" style="cursor: default; padding: 15px 25px; display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; border:1px solid #f1f5f9; border-radius:12px;">
                         <div style="flex: 2;">
-                            <strong>${u.full_name || 'İsimsiz Kullanıcı'}</strong>
-                            <div class="user-email">${u.email}</div>
+                            <strong>${u.full_name || 'No Name'}</strong>
+                            <div class="user-email" style="font-size:0.85rem; color:#64748b;">${u.email}</div>
                         </div>
                         <div style="flex: 1;"><span class="pill">${u.role}</span></div>
-                        <div style="flex: 1;"><span class="tag t-bg-blue">${u.account_status}</span></div>
+                        <div style="flex: 1;"><span class="tag ${u.account_status === 'Active' ? 't-bg-blue' : 't-bg-red'}">${u.account_status}</span></div>
                         <div style="display: flex; gap: 10px;">
-                            <button class="btn-back" style="padding: 8px;"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="toggleStatus(${u.id})" class="btn-back" style="padding: 8px; color: ${u.account_status === 'Active' ? 'var(--red)' : 'var(--green)'}; border-color:#e2e8f0;">
+                                <i class="fa-solid ${u.account_status === 'Active' ? 'fa-user-slash' : 'fa-user-check'}"></i>
+                            </button>
                         </div>
                     </div>`;
                     container.innerHTML += html;
                 });
             } catch (error) {
-                console.error("Users error:", error);
-                const container = document.getElementById('user-list-container');
-                if(container) container.innerHTML = '<p style="color:red; text-align:center;">Veri çekilemedi.</p>';
+                container.innerHTML = '<p style="color:red; text-align:center;">Could not load user data.</p>';
+            }
+        }
+
+        async function toggleStatus(userId) {
+            try {
+                await apiAdminToggleStatus(userId); // api.js
+                await loadUsers(); // Refresh list
+            } catch (error) {
+                alert("Status update failed: " + error.message);
+            }
+        }
+
+        // --- CONFIGURATION MANAGEMENT (FR48, FR50) ---
+        async function loadConfig() {
+            try {
+                const config = await apiAdminGetConfig(); // Fetch current DB settings
+                if (config) {
+                    document.getElementById('time-reading').value = config.reading_time_limit;
+                    document.getElementById('time-listening').value = config.listening_time_limit;
+                    document.getElementById('time-writing').value = config.writing_time_limit;
+                    document.getElementById('time-speaking').value = config.speaking_time_limit;
+                    
+                    if(config.ai_generation_settings?.difficulty) {
+                        document.getElementById('ai-difficulty').value = config.ai_generation_settings.difficulty;
+                    }
+                }
+            } catch (error) {
+                console.error("Config fetch failed:", error);
+            }
+        }
+
+        async function handleSaveConfigs() {
+            const btn = document.querySelector('.btn-admin-success');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+            // Collect values from the UI
+            const configData = {
+                reading_time_limit: parseInt(document.getElementById('time-reading').value),
+                listening_time_limit: parseInt(document.getElementById('time-listening').value),
+                writing_time_limit: parseInt(document.getElementById('time-writing').value),
+                speaking_time_limit: parseInt(document.getElementById('time-speaking').value),
+                difficulty: document.getElementById('ai-difficulty').value
+            };
+
+            try {
+                await apiAdminUpdateConfig(configData); // api.js
+                alert("System parameters updated successfully! / Sistem parametreleri güncellendi!");
+            } catch (error) {
+                alert("Update failed: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save All Configs';
             }
         }
 
         function handleLogout() {
-            // api.js içindeki hazır fonksiyonu kullandık
-            apiLogout();
+            apiLogout(); // From api.js
         }
     </script>
 </body>
-
 </html>
+

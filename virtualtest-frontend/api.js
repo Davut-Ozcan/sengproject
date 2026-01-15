@@ -283,6 +283,69 @@ function requireAuth() {
     }
     return true;
 }
+/**
+ * FR48, FR50: Update AI generation and test parameters.
+ * AI içerik üretim ve test parametrelerini günceller.
+ */
+async function apiAdminUpdateConfig(configData) {
+    const response = await fetch(`${API_BASE_URL}/admin/config`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(configData)
+    });
+    
+    if (!response.ok) {
+        const error = await response.json();
+        // Use the dynamic detail message from our backend
+        throw new Error(error.detail || 'Configuration update failed');
+    }
+    
+    return await response.json();
+}
+
+/**
+ * FR48, FR50: Fetches the current test configuration from the backend.
+ * Mevcut test konfigürasyonunu backend'den çeker.
+ */
+async function apiAdminGetConfig() {
+    const response = await fetch(`${API_BASE_URL}/admin/config`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    if (!response.ok) {
+        if (response.status === 403) throw new Error("Unauthorized Access / Yetkisiz Erişim");
+        throw new Error('Configuration could not be retrieved');
+    }
+    
+    return await response.json();
+}
+/**
+ * FR9: Toggle user status between 'Active' and 'Suspended'.
+ * Kullanıcı durumunu 'Aktif' veya 'Dondurulmuş' olarak değiştirir.
+ */
+async function apiAdminToggleStatus(userId) {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/status`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'User status update failed');
+    }
+    
+    return await response.json();
+}
 
 function updateUserUI() {
     const user = getUser();
@@ -291,6 +354,7 @@ function updateUserUI() {
             el.textContent = user.full_name || user.email;
         });
     }
+
 }
 
 // ==========================================
