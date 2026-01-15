@@ -15,8 +15,9 @@
 # ============================================
 
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional
+import re
 
 
 # ==========================================
@@ -114,15 +115,16 @@ class RegisterRequest(BaseModel):
     
     password: str = Field(
         ...,
-        min_length=6,
+        min_length=8,
         max_length=100,
-        description="Şifre (minimum 6 karakter)"
+        description="Şifre (minimum 8 karakter)"
     )
     
     # Şifre tekrarı (frontend'de eşleşme kontrolü için)
-    password_confirm: Optional[str] = Field(
-        None,
-        description="Şifre tekrarı (opsiyonel)"
+    password_confirm: str = Field(
+        ..., 
+        min_length=8,
+        description="Must match password"
     )
     
     full_name: Optional[str] = Field(
@@ -131,6 +133,58 @@ class RegisterRequest(BaseModel):
         description="Tam ad"
     )
 
+
+    # EMAIL VALIDATOR / EMAIL DOĞRULAYICI
+    @field_validator('email')
+    @classmethod
+    def validate_email_format(cls, v: str) -> str:
+        """
+        Custom check for email format to provide descriptive error messages.
+        Daha açıklayıcı hata mesajları sağlamak için özel email format kontrolü.
+        """
+        # Standard email pattern / Standart email deseni
+        email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        
+        # Check basic format / Temel formatı kontrol et
+        if not re.match(email_regex, v):
+            raise ValueError('Invalid email format. Use example@domain.com / Geçersiz email formatı. Lütfen example@domain.com şeklinde yazın.')
+        
+        # Check for empty spaces / Boşluk kontrolü
+        if " " in v:
+            raise ValueError('Email cannot contain spaces / Email adresi boşluk içeremez.')
+            
+        return v.lower() # Normalize to lowercase / Küçük harfe dönüştürerek standartlaştır
+
+
+    # PASSWORD COMPLEXITY / ŞİFRE KARMAŞIKLIĞI
+    @field_validator('password')
+    @classmethod
+    def password_complexity(cls, v: str) -> str:
+        """
+        Ensures the password meets complexity requirements (A-Z, a-z, 0-9, symbol).
+        Şifrenin karmaşıklık kurallarına uygunluğunu denetler (A-Z, a-z, 0-9, sembol).
+        """
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('Password must contain at least one uppercase letter.')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('Password must contain at least one lowercase letter.')
+        if not re.search(r'[0-9]', v):
+            raise ValueError('Password must contain at least one digit.')
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', v):
+            raise ValueError('Password must contain at least one special character.')
+        return v
+
+    # PASSWORD MATCH / ŞİFRE EŞLEŞMESİ
+    @field_validator('password_confirm')
+    @classmethod
+    def passwords_match(cls, v: str, info) -> str:
+        """
+        Validates that password_confirm matches the password field.
+        password_confirm alanının password alanı ile aynı olduğunu doğrular.
+        """
+        if 'password' in info.data and v != info.data['password']:
+            raise ValueError('Passwords do not match.')
+        return v
 
 class RegisterResponse(BaseModel):
     """
@@ -186,6 +240,9 @@ class TokenData(BaseModel):
     # subject: Token'ın sahibi (genellikle user_id)
     sub: Optional[str] = None
     
+    # Kullanıcı rolü (opsiyonel)
+    role: Optional[str] = None
+
     # Token'ın ne zaman oluşturulduğu
     exp: Optional[int] = None
 

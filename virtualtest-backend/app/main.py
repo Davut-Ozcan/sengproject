@@ -194,6 +194,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     Pydantic validation hatalarını daha okunabilir formatta döndürür.
     """
     errors = []
+
+    all_errors = exc.errors()
+
+    specific_message = all_errors[0].get("msg") if all_errors else "Invalid data"
+
     for error in exc.errors():
         errors.append({
             "field": " -> ".join(str(x) for x in error["loc"]),
@@ -204,7 +209,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
-            "detail": "Geçersiz veri",
+            "detail": specific_message,
             "errors": errors
         }
     )
