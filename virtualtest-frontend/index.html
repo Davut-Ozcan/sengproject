@@ -337,18 +337,18 @@
     <script>
         let currentSession = null;
 
-        // Sayfa yüklendiğinde
+        // On page load
         document.addEventListener('DOMContentLoaded', async function () {
-            // Auth kontrolü
+            // Auth check
             if (!isLoggedIn()) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            // Kullanıcı bilgilerini güncelle
+            // Update user info
             updateUserDisplay();
 
-            // Test oturumunu başlat veya mevcut oturumu al
+            // Start a test session or load the existing one
             await initializeTest();
         });
 
@@ -363,12 +363,12 @@
 
         async function initializeTest() {
             try {
-                // Test başlat veya mevcut oturumu al
+                // Start a test or load the current session
                 const session = await apiStartTest();
                 currentSession = session;
                 localStorage.setItem('current_session', JSON.stringify(session));
 
-                // UI'ı güncelle
+                // Update the UI
                 updateProgressUI(session);
                 updateModuleCards(session);
 
@@ -383,7 +383,7 @@
             const total = 4;
             const percent = (completed.length / total) * 100;
 
-            // Progress bar göster
+            // Show the progress bar
             if (completed.length > 0) {
                 document.getElementById('progress-info').style.display = 'flex';
                 document.getElementById('progress-text').textContent =
@@ -391,7 +391,7 @@
                 document.getElementById('progress-fill').style.width = `${percent}%`;
             }
 
-            // Banner güncelle
+            // Update the banner
             if (session.is_completed) {
                 document.getElementById('banner-title').textContent =
                     `Your Score: ${session.overall_score?.toFixed(0) || 0} - Level ${session.overall_cefr_level || 'N/A'}`;
@@ -419,7 +419,7 @@
                 return;
             }
 
-            // Modül zaten tamamlanmış mı?
+            // Is the module already completed?
             if (currentSession.completed_modules?.includes(moduleName)) {
                 const proceed = await showConfirm('Module Completed', 'You have already completed this module. Do you want to continue anyway?');
                 if (!proceed) {
@@ -427,7 +427,7 @@
                 }
             }
 
-            // Modül sayfasına yönlendir
+            // Navigate to the module page
             localStorage.setItem('current_module', moduleName);
             window.location.href = `${moduleName}.html`;
         }
@@ -509,28 +509,28 @@
     <script>
         let currentSession = null;
 
-        // Sayfa yüklendiğinde çalışacak kısım
+        // Runs on page load
         document.addEventListener('DOMContentLoaded', async function () {
             
             if (isLoggedIn()) {
-                // --- GİRİŞ YAPILMIŞSA ---
-                // Kullanıcı ismini göster ve testi yükle
+                // --- LOGGED IN ---
+                // Show the user name and load the test
                 updateUserDisplay();
                 await initializeTest();
             } else {
-                // --- GİRİŞ YAPILMAMIŞSA ---
-                // Sağ üstteki butonu "Sign Up" butonuna dönüştür
+                // --- NOT LOGGED IN ---
+                // Convert the top-right button to "Sign Up"
                 const userBtn = document.getElementById('user-menu-btn');
                 const nameSpan = userBtn.querySelector('.u-name');
                 const arrowIcon = userBtn.querySelector('.fa-chevron-down');
 
-                // 1. Yazıyı değiştir
+                // 1. Change the label
                 if(nameSpan) nameSpan.textContent = 'Sign Up';
 
-                // 2. Aşağı ok ikonunu gizle (Çünkü menü açılmayacak)
+                // 2. Hide the down arrow icon (menu won't open)
                 if(arrowIcon) arrowIcon.style.display = 'none';
 
-                // 3. Butona tıklayınca Login sayfasına gitmesini sağla (Menüyü açma fonksiyonunu eziyoruz)
+                // 3. Redirect to login on click (override the menu handler)
                 userBtn.onclick = function() {
                     window.location.href = 'login.html';
                 };
@@ -557,7 +557,7 @@
 
             } catch (error) {
                 console.error('Test initialization error:', error);
-                // Token hatası varsa çıkış yap
+                // Logout if the token is invalid
                 if(error.message.includes('401')) {
                     apiLogout(); 
                 }
@@ -597,7 +597,7 @@
         }
 
         async function startModule(moduleName) {
-            // Modüle tıklandığında giriş kontrolü
+            // Auth check when clicking a module
             if (!isLoggedIn()) {
                 window.location.href = 'login.html';
                 return;
