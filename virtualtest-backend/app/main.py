@@ -232,8 +232,11 @@ app.include_router(
     test_router,
     prefix="/api"
 )
-app.include_router(admin.router)
-
+# ✅ YENİ HALİ (Doğru)
+app.include_router(
+    admin.router,
+    prefix="/api"  # <-- İşte bu eksikti!
+)
 
 # ==========================================
 # ROOT ENDPOINT
