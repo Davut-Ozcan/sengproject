@@ -218,6 +218,45 @@ async function apiGetResult(sessionId) {
 // YARDIMCI FONKSİYONLAR
 // ==========================================
 
+// ==========================================
+// ADMIN API
+// ==========================================
+
+async function apiAdminGetStats() {
+    const response = await fetch(`${API_BASE_URL}/admin/stats`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    if (!response.ok) {
+        // Eğer yetkisiz ise (403) veya hata varsa fırlat
+        if (response.status === 403) throw new Error("Unauthorized");
+        throw new Error('Stats could not be retrieved');
+    }
+    
+    return await response.json();
+}
+
+async function apiAdminGetUsers() {
+    const response = await fetch(`${API_BASE_URL}/admin/users`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    if (!response.ok) {
+        if (response.status === 403) throw new Error("Unauthorized");
+        throw new Error('Users could not be retrieved');
+    }
+    
+    return await response.json();
+}
+
 function getCurrentSession() {
     const session = localStorage.getItem('current_session');
     return session ? JSON.parse(session) : null;

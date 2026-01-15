@@ -327,7 +327,7 @@
 
     <main class="app-container admin-hub-container">
 
-        <div class="summary-grid">
+        <!-- <div class="summary-grid">
             <div class="summary-card">
                 <div class="icon-box i-blue"><i class="fa-solid fa-users"></i></div>
                 <div class="stats-info"><small>Total Users</small><strong>1,284</strong></div>
@@ -344,8 +344,25 @@
                 <div class="icon-box i-green"><i class="fa-solid fa-award"></i></div>
                 <div class="stats-info"><small>Avg. CEFR</small><strong>B2 High</strong></div>
             </div>
+        </div> -->
+            <div class="summary-grid">
+            <div class="summary-card">
+            <div class="icon-box i-blue"><i class="fa-solid fa-users"></i></div>
+            <div class="stats-info"><small>Total Users</small><strong id="stat-total-users">...</strong></div>
         </div>
-
+            <div class="summary-card">
+            <div class="icon-box i-purple"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="stats-info"><small>Total Admins</small><strong id="stat-total-admins">...</strong></div>
+        </div>
+            <div class="summary-card">
+            <div class="icon-box i-orange"><i class="fa-solid fa-robot"></i></div>
+            <div class="stats-info"><small>AI Engine</small><strong id="stat-ai-status">Checking...</strong></div>
+         </div>
+            <div class="summary-card">
+               <div class="icon-box i-green"><i class="fa-solid fa-award"></i></div>
+               <div class="stats-info"><small>Active Users</small><strong id="stat-active-users">...</strong></div>
+            </div>
+        </div>       
         <div class="admin-tabs">
             <button class="tab-btn active" onclick="showPanel('users')">
                 <i class="fa-solid fa-user-shield"></i> User Management
@@ -361,7 +378,7 @@
             </button>
         </div>
 
-        <div id="users" class="tab-panel">
+        <!-- <div id="users" class="tab-panel">
             <div class="section-header"
                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                 <h2 style="font-size: 1.4rem;">User Oversight</h2>
@@ -382,7 +399,18 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
+        <div id="users" class="tab-panel">
+    <div class="section-header"
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <h2 style="font-size: 1.4rem;">User Oversight</h2>
+        <button class="btn-admin-primary"><i class="fa-solid fa-user-plus"></i> Create New Account</button>
+    </div>
+    
+    <div class="list-topics" id="user-list-container" style="max-width: 100%; margin-top: 20px;">
+        <p style="text-align: center; color: #94a3b8;">Loading user data...</p>
+      </div>
+   </div>
 
         <div id="config" class="tab-panel hidden">
             <div class="section-header"
@@ -461,7 +489,7 @@
 
     </main>
 
-    <script>
+    <!-- <script>
         document.addEventListener('DOMContentLoaded', function () {
             const userBtn = document.getElementById('admin-user-btn');
             const dropdown = document.getElementById('admin-dropdown');
@@ -484,6 +512,95 @@
 
         function handleLogout() {
             window.location.href = 'login.html';
+        }
+    </script> -->
+    <script src="api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            // 1. Giriş kontrolü (api.js'deki fonksiyonu kullandık)
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // 2. Admin Verilerini Çek
+            await loadStats();
+            await loadUsers();
+
+            // 3. Dropdown Menu
+            const userBtn = document.getElementById('admin-user-btn');
+            const dropdown = document.getElementById('admin-dropdown');
+
+            if (userBtn) {
+                userBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    dropdown.classList.toggle('show');
+                });
+            }
+
+            document.addEventListener('click', () => {
+                if (dropdown) dropdown.classList.remove('show');
+            });
+        });
+
+        // --- İstatistikleri Çekme Fonksiyonu ---
+        async function loadStats() {
+            try {
+                // ARTIK TEK SATIRDA ÇEKİYORUZ!
+                const data = await apiAdminGetStats();
+                
+                document.getElementById('stat-total-users').textContent = data.total_users;
+                document.getElementById('stat-total-admins').textContent = data.total_admins;
+                document.getElementById('stat-active-users').textContent = data.active_users;
+                document.getElementById('stat-ai-status').textContent = data.ai_status;
+            } catch (error) {
+                console.error("Stats error:", error);
+                if(error.message === "Unauthorized") {
+                    alert("Erişim Reddedildi: Admin değilsiniz!");
+                    window.location.href = 'index.html';
+                }
+            }
+        }
+
+        // --- Kullanıcı Listesini Çekme Fonksiyonu ---
+        async function loadUsers() {
+            try {
+                // ARTIK TEK SATIRDA ÇEKİYORUZ!
+                const users = await apiAdminGetUsers();
+                const container = document.getElementById('user-list-container');
+
+                container.innerHTML = ''; 
+
+                if(users.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;">Hiç kullanıcı bulunamadı.</p>';
+                    return;
+                }
+
+                users.forEach(u => {
+                    const html = `
+                    <div class="list-item" style="cursor: default; padding: 15px 25px;">
+                        <div style="flex: 2;">
+                            <strong>${u.full_name || 'İsimsiz Kullanıcı'}</strong>
+                            <div class="user-email">${u.email}</div>
+                        </div>
+                        <div style="flex: 1;"><span class="pill">${u.role}</span></div>
+                        <div style="flex: 1;"><span class="tag t-bg-blue">${u.account_status}</span></div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-back" style="padding: 8px;"><i class="fa-solid fa-pen"></i></button>
+                        </div>
+                    </div>`;
+                    container.innerHTML += html;
+                });
+            } catch (error) {
+                console.error("Users error:", error);
+                const container = document.getElementById('user-list-container');
+                if(container) container.innerHTML = '<p style="color:red; text-align:center;">Veri çekilemedi.</p>';
+            }
+        }
+
+        function handleLogout() {
+            // api.js içindeki hazır fonksiyonu kullandık
+            apiLogout();
         }
     </script>
 </body>

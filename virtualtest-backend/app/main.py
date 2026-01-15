@@ -35,7 +35,7 @@ from app.core.database import create_tables, engine
 
 # Router'lar
 from app.routers import auth_router, test_router
-
+from app.routers import auth, test, admin
 
 # ==========================================
 # LIFESPAN (Uygulama Yaşam Döngüsü)
@@ -232,6 +232,7 @@ app.include_router(
     test_router,
     prefix="/api"
 )
+app.include_router(admin.router)
 
 
 # ==========================================
