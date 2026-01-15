@@ -13,7 +13,7 @@
 
 from pydantic_settings import BaseSettings
 from typing import Optional, List
-
+from fastapi_mail import ConnectionConfig
 
 class Settings(BaseSettings):
     """
@@ -39,6 +39,20 @@ class Settings(BaseSettings):
     # AI SERVICES
     # ==========================================
     GEMINI_API_KEY: Optional[str] = None
+
+    # ==========================================
+    # EMAIL SETTINGS (GMAIL SMTP) - YENİ EKLENDİ
+    # ==========================================
+    MAIL_USERNAME: str = "zenithai090@gmail.com"
+    MAIL_PASSWORD: str = ""  # .env dosyasından uygulama şifresini okuyacak
+    MAIL_FROM: str = "zenithai090@gmail.com"
+    MAIL_SERVER: str = "smtp.gmail.com"
+    MAIL_PORT: int = 587
+    MAIL_FROM_NAME: str = "ZenithAI Support"
+    MAIL_STARTTLS: bool = True
+    MAIL_SSL_TLS: bool = False
+    USE_CREDENTIALS: bool = True
+    VALIDATE_CERTS: bool = True
     
     # ==========================================
     # APPLICATION
@@ -68,6 +82,24 @@ class Settings(BaseSettings):
             # ["http://localhost:5500", "http://127.0.0.1:5500"]
         """
         return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
+    
+    def get_mail_config(self) -> ConnectionConfig:
+        """
+        fastapi-mail için gerekli ConnectionConfig objesini oluşturur.
+        """
+        return ConnectionConfig(
+            MAIL_USERNAME=self.MAIL_USERNAME,
+            MAIL_PASSWORD=self.MAIL_PASSWORD,
+            MAIL_FROM=self.MAIL_FROM,
+            MAIL_PORT=self.MAIL_PORT,
+            MAIL_SERVER=self.MAIL_SERVER,
+            MAIL_FROM_NAME=self.MAIL_FROM_NAME,
+            MAIL_STARTTLS=self.MAIL_STARTTLS,
+            MAIL_SSL_TLS=self.MAIL_SSL_TLS,
+            USE_CREDENTIALS=self.USE_CREDENTIALS,
+            VALIDATE_CERTS=self.VALIDATE_CERTS
+        )
+
 
 
 # Singleton instance - tüm projede bu kullanılır

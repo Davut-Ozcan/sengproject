@@ -1,54 +1,34 @@
 # ============================================
 # app/routers/auth.py - Authentication Endpoints
 # ============================================
-#
-# Bu dosya ne yapıyor?
-# --------------------
-# Login ve Register API endpoint'lerini tanımlar.
-# Frontend bu URL'lere istek atar.
-#
-# Endpoint'ler:
-# -------------
-# POST /api/auth/register  → Yeni hesap oluştur
-# POST /api/auth/login     → Giriş yap, token al
-# GET  /api/auth/me        → Mevcut kullanıcı bilgisi
-# POST /api/auth/logout    → Çıkış (opsiyonel)
-# ============================================
 
-
-# FastAPI imports
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
-# SQLAlchemy imports
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
+from typing import Annotated, Optional
+import random
+from datetime import datetime, timedelta
+from app.models.verification import VerificationCode
 
-# Typing
-from typing import Annotated
-
+# Mail ve Config
+from fastapi_mail import FastMail, MessageSchema, MessageType
+from app.core.config import settings
 
 # Projemizin modülleri
 from app.core.database import get_db
-from app.core.security import hash_password, verify_password, create_access_token
+from app.core.security import hash_password, verify_password, create_access_token, verify_token
 from app.models.user import User
+
+
 from app.schemas.auth import (
-    LoginRequest,
     LoginResponse,
     RegisterRequest,
     RegisterResponse,
     MessageResponse,
 )
 from app.schemas.user import UserResponse
-
-
-# ==========================================
-# ROUTER OLUŞTURMA
-# ==========================================
-#
-# APIRouter: Endpoint'leri gruplamak için kullanılır.
-# prefix="/auth": Tüm URL'ler /auth ile başlar
-# tags=["Auth"]: Swagger UI'da gruplama için
 
 router = APIRouter(
     prefix="/auth",
@@ -59,229 +39,186 @@ router = APIRouter(
     }
 )
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+
+# ==========================================
+# YARDIMCI FONKSİYONLAR (OTP & MAIL)
+# ==========================================
+
+def generate_otp() -> str:
+    """6 haneli rastgele sayısal kod üretir."""
+    return str(random.randint(100000, 999999))
+
+async def send_otp_email(email: str, otp: str):
+    """Gmail SMTP üzerinden doğrulama kodu gönderir."""
+    html = f"""
+    <div style="font-family: Arial; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <h2 style="color: #2b57ff;">ZenithAI Doğrulama Kodu</h2>
+        <p>Hesabınızı doğrulamak için aşağıdaki 6 haneli kodu kullanabilirsiniz:</p>
+        <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1e293b; padding: 10px; background: #f8fafc; text-align: center;">
+            {otp}
+        </div>
+        <p style="color: #64748b; font-size: 0.9rem;">Bu kod 10 dakika süreyle geçerlidir.</p>
+    </div>
+    """
+    message = MessageSchema(
+        subject="ZenithAI - Email Doğrulama Kodun",
+        recipients=[email],
+        body=html,
+        subtype=MessageType.html
+    )
+    # Settings üzerinden mail konfigürasyonunu alıyoruz
+    fm = FastMail(settings.get_mail_config()) 
+    await fm.send_message(message)
 
 # ==========================================
 # DEPENDENCY: Mevcut Kullanıcıyı Al
 # ==========================================
-#
-# Bu fonksiyon token'dan kullanıcıyı çıkarır.
-# Korumalı endpoint'lerde kullanılır.
-
-from fastapi.security import OAuth2PasswordBearer
-
-# OAuth2PasswordBearer: Token'ı header'dan alır
-# tokenUrl: Login endpoint'i (Swagger için)
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-
 
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     db: Annotated[AsyncSession, Depends(get_db)]
 ) -> User:
-    """
-    Token'dan mevcut kullanıcıyı çıkarır.
-    
-    Bu bir "dependency" fonksiyonudur.
-    Korumalı endpoint'lerde şöyle kullanılır:
-    
-        @router.get("/me")
-        async def get_me(current_user: User = Depends(get_current_user)):
-            return current_user
-    
-    Args:
-        token: JWT token (header'dan otomatik alınır)
-        db: Database session
-    
-    Returns:
-        User: Mevcut kullanıcı
-    
-    Raises:
-        HTTPException: Token geçersizse 401 hatası
-    """
-    from app.core.security import verify_token
-    
-    # Token'ı doğrula
+    """Token'ı doğrular ve aktif kullanıcıyı döner."""
     payload = verify_token(token)
-    
     if payload is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Geçersiz veya süresi dolmuş token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Geçersiz token")
     
-    # Token'dan user_id al
     user_id = payload.get("sub")
-    
-    if user_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token'da kullanıcı bilgisi yok",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    # Database'den kullanıcıyı bul
-    result = await db.execute(
-        select(User).where(User.id == int(user_id))
-    )
+    result = await db.execute(select(User).where(User.id == int(user_id)))
     user = result.scalar_one_or_none()
     
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Kullanıcı bulunamadı",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise HTTPException(status_code=401, detail="Kullanıcı bulunamadı")
     
-    # Hesap aktif mi kontrol et
     if user.account_status != "Active":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Hesap durumu: {user.account_status}. Giriş yapılamaz.",
-        )
+        raise HTTPException(status_code=403, detail=f"Hesap durumu: {user.account_status}")
     
     return user
 
-
-# Aktif kullanıcı için kısa yol (type alias)
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
-
 # ==========================================
-# ENDPOINT: Register (Kayıt)
+# ENDPOINTS: Register Flow (OTP Destekli)
 # ==========================================
 
-@router.post(
-    "/register",
-    response_model=RegisterResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Yeni kullanıcı kaydı",
-    description="Email ve şifre ile yeni hesap oluşturur."
-)
+# Gerekli importları eklemeyi unutma:
+# from app.models.verification import VerificationCode
+
+@router.post("/request-otp", summary="1. Adım: Kod Gönder")
+async def request_otp(
+    email: str, 
+    background_tasks: BackgroundTasks, 
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    """Email kontrolü yapar, kodu DB'ye kaydeder ve mail gönderir."""
+    # 1. Kullanıcı zaten var mı kontrolü
+    existing = await db.execute(select(User).where(User.email == email))
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Bu email zaten kayıtlı.")
+    
+    # 2. OTP Üretimi
+    otp_code = generate_otp()
+    
+    # 3. Kodu Veritabanına Kaydet (Hafıza)
+    # db.merge: Varsa günceller, yoksa yeni kayıt açar (Upsert)
+    db_otp = VerificationCode(email=email, code=otp_code)
+    await db.merge(db_otp) 
+    await db.commit()
+
+    # 4. Maili arka planda gönder
+    background_tasks.add_task(send_otp_email, email, otp_code)
+    return {"message": "Doğrulama kodu gönderildi.", "success": True}
+
+
+@router.post("/verify-otp", summary="2. Adım: Kodu Doğrula (Ara Geçiş)")
+async def verify_otp(
+    email: str, 
+    code: str, 
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    """Frontend'in 3. adıma geçmeden önce kodu sorguladığı yer."""
+    result = await db.execute(select(VerificationCode).where(
+        VerificationCode.email == email, 
+        VerificationCode.code == code
+    ))
+    db_otp = result.scalar_one_or_none()
+    
+    if not db_otp:
+        raise HTTPException(status_code=400, detail="Geçersiz kod.")
+    
+    if db_otp.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Kodun süresi dolmuş.")
+        
+    return {"message": "Kod onaylandı.", "success": True}
+
+
+@router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
 async def register(
-    data: RegisterRequest,
+    data: RegisterRequest, 
+    otp_code: str, 
     db: Annotated[AsyncSession, Depends(get_db)]
 ) -> RegisterResponse:
-    """
-    Yeni kullanıcı kaydı.
+    """OTP doğrulaması yapar ve hesabı oluşturur."""
     
-    İşlem adımları:
-    1. Email daha önce kullanılmış mı kontrol et
-    2. Şifreyi hashle
-    3. Kullanıcıyı database'e kaydet
-    4. JWT token oluştur ve döndür
+    # 1. Son Güvenlik Kontrolü: Kod hala geçerli mi?
+    result = await db.execute(select(VerificationCode).where(
+        VerificationCode.email == data.email, 
+        VerificationCode.code == otp_code
+    ))
+    db_otp = result.scalar_one_or_none()
     
-    Args:
-        data: RegisterRequest (email, password, full_name)
-        db: Database session
+    if not db_otp or db_otp.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Doğrulama başarısız. Kod hatalı veya süresi dolmuş.")
     
-    Returns:
-        RegisterResponse: user_id, email, access_token
-    
-    Raises:
-        HTTPException 400: Email zaten kayıtlı
-    """
-    
-    # 1. Email kontrolü
-    existing_user = await db.execute(
-        select(User).where(User.email == data.email)
-    )
-    if existing_user.scalar_one_or_none():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Bu email adresi zaten kayıtlı"
-        )
-    
-    # 2. Şifre hashle
+    # 2. Kullanıcı Oluşturma
     hashed_password = hash_password(data.password)
-    
-    # 3. Yeni kullanıcı oluştur
     new_user = User(
         email=data.email,
         password_hash=hashed_password,
         full_name=data.full_name,
-        role="Student",  # Varsayılan rol
-        account_status="Active"  # Direkt aktif (email doğrulama sonra eklenebilir)
+        role="Student",
+        account_status="Active"
     )
     
-    # Database'e ekle
     db.add(new_user)
     
     try:
+        # 3. İşlemleri tamamla ve kullanılan kodu sil
+        await db.delete(db_otp) 
         await db.commit()
-        await db.refresh(new_user)  # ID'yi al
+        await db.refresh(new_user)
     except IntegrityError:
         await db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Kayıt sırasında hata oluştu"
-        )
-    
-    # 4. Token oluştur
-    access_token = create_access_token(
-    data={
-        "sub": str(new_user.id), 
-        "role": new_user.role  # Rol bilgisini (Student/Admin) ekledik
-     }
-  )
+        raise HTTPException(status_code=400, detail="Kayıt sırasında bir hata oluştu.")
+
+    access_token = create_access_token(data={"sub": str(new_user.id), "role": new_user.role})
     
     return RegisterResponse(
-        message="Kayıt başarılı",
+        message="Hesap doğrulandı ve oluşturuldu",
         user_id=new_user.id,
         email=new_user.email,
         access_token=access_token,
         token_type="bearer"
     )
 
-
 # ==========================================
-# ENDPOINT: Login (Giriş)
+# ENDPOINT: Login, Me, Logout
 # ==========================================
 
-from fastapi.security import OAuth2PasswordRequestForm
-
-@router.post(
-    "/login",
-    response_model=LoginResponse,
-    summary="Kullanıcı girişi",
-    description="Email ve şifre ile giriş yapar, JWT token döndürür."
-)
+@router.post("/login", response_model=LoginResponse)
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Annotated[AsyncSession, Depends(get_db)]
 ) -> LoginResponse:
-    """
-    Kullanıcı girişi (OAuth2 uyumlu).
-    """
-    
-    # form_data.username = email olarak kullanılıyor
-    result = await db.execute(
-        select(User).where(User.email == form_data.username)
-    )
+    """OAuth2 uyumlu giriş endpoint'i."""
+    result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalar_one_or_none()
     
-    # Kullanıcı yoksa veya şifre yanlışsa
     if not user or not verify_password(form_data.password, user.password_hash):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Geçersiz email veya şifre",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise HTTPException(status_code=401, detail="Geçersiz email veya şifre")
     
-    # Hesap durumu kontrolü
-    if user.account_status != "Active":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Hesap durumu: {user.account_status}"
-        )
-    
-    # Token oluştur
-    access_token = create_access_token(
-    data={
-        "sub": str(user.id), 
-        "role": user.role  
-    }
-)
+    access_token = create_access_token(data={"sub": str(user.id), "role": user.role})
     
     return LoginResponse(
         access_token=access_token,
@@ -292,125 +229,10 @@ async def login(
         full_name=user.full_name
     )
 
-# ==========================================
-# ENDPOINT: Me (Mevcut Kullanıcı)
-# ==========================================
-
-@router.get(
-    "/me",
-    response_model=UserResponse,
-    summary="Mevcut kullanıcı bilgisi",
-    description="Token'a göre giriş yapmış kullanıcının bilgilerini döndürür."
-)
+@router.get("/me", response_model=UserResponse)
 async def get_me(current_user: CurrentUser) -> UserResponse:
-    """
-    Mevcut kullanıcının bilgilerini döndürür.
-    
-    Bu endpoint korumalıdır.
-    Header'da geçerli bir token olmalı:
-    Authorization: Bearer <token>
-    
-    Args:
-        current_user: Token'dan çıkarılan kullanıcı (otomatik)
-    
-    Returns:
-        UserResponse: Kullanıcı bilgileri
-    """
     return UserResponse.model_validate(current_user)
 
-
-# ==========================================
-# ENDPOINT: Logout (Çıkış) - Opsiyonel
-# ==========================================
-
-@router.post(
-    "/logout",
-    response_model=MessageResponse,
-    summary="Çıkış",
-    description="Kullanıcı oturumunu sonlandırır."
-)
+@router.post("/logout", response_model=MessageResponse)
 async def logout(current_user: CurrentUser) -> MessageResponse:
-    """
-    Kullanıcı çıkışı.
-    
-    JWT stateless olduğu için sunucu tarafında
-    yapılacak bir şey yok. Frontend token'ı siler.
-    
-    İleride token blacklist eklenebilir.
-    
-    Returns:
-        MessageResponse: Başarı mesajı
-    """
-    # Not: JWT stateless, sunucuda session tutmuyoruz
-    # Frontend token'ı localStorage'dan silmeli
-    
-    return MessageResponse(
-        message="Çıkış başarılı",
-        success=True
-    )
-
-
-# ==========================================
-# ENDPOINT: Şifre Değiştirme
-# ==========================================
-
-from fastapi.security import OAuth2PasswordRequestForm
-
-@router.post(
-    "/login",
-    response_model=LoginResponse,
-    summary="Kullanıcı girişi",
-    description="Email ve şifre ile giriş yapar, JWT token döndürür."
-)
-async def login(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db: Annotated[AsyncSession, Depends(get_db)]
-) -> LoginResponse:
-    """
-    Kullanıcı girişi.
-    """
-    
-    # form_data.username = email olarak kullanılıyor
-    result = await db.execute(
-        select(User).where(User.email == form_data.username)
-    )
-    user = result.scalar_one_or_none()
-    
-    if not user or not verify_password(form_data.password, user.password_hash):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Geçersiz email veya şifre",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    if user.account_status != "Active":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Hesap durumu: {user.account_status}"
-        )
-    
-    access_token = create_access_token(
-    data={
-        "sub": str(user.id), 
-        "role": user.role  
-    }
-)
-    
-    return LoginResponse(
-        access_token=access_token,
-        token_type="bearer",
-        user_id=user.id,
-        email=user.email,
-        role=user.role,
-        full_name=user.full_name
-    )
-
-# --- EKSİK OLAN PARÇA ---
-# admin.py dosyasının çalışması için bu gereklidir.
-
-async def get_current_active_user(
-    current_user: User = Depends(get_current_user)
-):
-    if current_user.account_status != "Active":
-        raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
+    return MessageResponse(message="Çıkış başarılı", success=True)

@@ -159,7 +159,8 @@ app.add_middleware(
     
     # İzin verilen origin'ler (frontend adresleri)
     allow_origins=settings.get_allowed_origins_list(),
-    
+    #allow_origins=["http://127.0.0.1:5500", "http://localhost:5500"],
+
     # Cookie göndermeye izin ver
     allow_credentials=True,
     

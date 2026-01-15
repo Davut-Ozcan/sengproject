@@ -1,63 +1,55 @@
-# ============================================
-# VirtuaTest Backend - Python Paketleri
-# ============================================
-# Her paket ne işe yarıyor açıklamalı
-
-# ----- WEB FRAMEWORK -----
-# FastAPI: Modern, hızlı Python web framework
-# Avantajları: Otomatik API dökümantasyonu, tip kontrolü, async destek
-fastapi==0.109.0
-
-# Uvicorn: ASGI sunucusu - FastAPI'yi çalıştırır
-# [standard]: WebSocket, otomatik reload gibi ekstra özellikler
-uvicorn[standard]==0.27.0
-
-# ----- DATABASE -----
-# SQLAlchemy: ORM (Object Relational Mapper)
-# SQL yazmadan Python nesneleriyle veritabanı işlemi
-# Örnek: User(email="x") yerine INSERT INTO users yazmazsın
-sqlalchemy==2.0.25
-
-# asyncpg: PostgreSQL için async driver
-# FastAPI async çalıştığı için async driver şart
-asyncpg==0.29.0
-
-# psycopg2-binary: PostgreSQL bağlantısı için (sync işlemler)
-# Alembic migration için gerekli
-psycopg2-binary==2.9.9
-
-# Alembic: Database migration aracı
-# Tablo yapısı değişince mevcut verileri korur
-alembic==1.13.1
-
-# ----- GÜVENLİK -----
-# python-jose: JWT token oluşturma/doğrulama
-# [cryptography]: Şifreleme algoritmaları
-python-jose[cryptography]==3.3.0
-
-# passlib: Şifre hashleme (bcrypt algoritması)
-# Şifreler düz metin ASLA saklanmaz!
-passlib[bcrypt]==1.7.4
-
-# python-multipart: Dosya yükleme desteği
-# Speaking modülünde ses dosyası için
-python-multipart==0.0.6
-
-# ----- DOĞRULAMA -----
-# Pydantic: Veri doğrulama
-# API'ye gelen verinin doğru formatta olduğunu kontrol eder
-pydantic==2.5.3
-pydantic-settings==2.1.0
-email-validator==2.1.0
-
-# ----- YARDIMCI -----
-# python-dotenv: .env dosyasını okur
-python-dotenv==1.0.1
-
-# httpx: HTTP client - AI servislerine istek için
-httpx==0.26.0
-
-bcrypt==4.0.1
-
-google-generativeai==0.8.3
-gTTS==2.5.1
+aiosmtplib==5.0.0
+annotated-doc==0.0.4
+annotated-types==0.7.0
+anyio==4.12.0
+asyncpg==0.31.0
+bcrypt==5.0.0
+blinker==1.9.0
+certifi==2025.11.12
+cffi==2.0.0
+click==8.3.1
+colorama==0.4.6
+contourpy==1.3.3
+cryptography==46.0.3
+cycler==0.12.1
+dnspython==2.8.0
+ecdsa==0.19.1
+email-validator==2.3.0
+fastapi==0.124.4
+fastapi-mail==1.6.1
+fonttools==4.61.1
+greenlet==3.3.0
+h11==0.16.0
+httpcore==1.0.9
+httptools==0.7.1
+httpx==0.28.1
+idna==3.11
+Jinja2==3.1.6
+kiwisolver==1.4.9
+MarkupSafe==3.0.3
+matplotlib==3.10.8
+numpy==2.4.0
+packaging==25.0
+passlib==1.7.4
+pillow==12.0.0
+pyasn1==0.6.1
+pycparser==2.23
+pydantic==2.12.5
+pydantic-settings==2.12.0
+pydantic_core==2.41.5
+pyparsing==3.3.1
+python-dateutil==2.9.0.post0
+python-dotenv==1.2.1
+python-jose==3.5.0
+python-multipart==0.0.21
+PyYAML==6.0.3
+regex==2025.11.3
+rsa==4.9.1
+six==1.17.0
+SQLAlchemy==2.0.45
+starlette==0.50.0
+typing-inspection==0.4.2
+typing_extensions==4.15.0
+uvicorn==0.38.0
+watchfiles==1.1.1
+websockets==15.0.1
