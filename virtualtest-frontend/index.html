@@ -432,17 +432,70 @@
             window.location.href = `${moduleName}.html`;
         }
 
-        function viewResults() {
-            if (!currentSession) {
-                showAlert('Info', 'Please wait...', 'info');
-                return;
+        async function viewResults() {
+            const session = currentSession || getCurrentSession();
+            let completedSession = session && session.is_completed ? session : null;
+            const sessionId = session ? (session.id || session.session_id) : null;
+            let localCount = 0;
+            if (sessionId) {
+                try {
+                    const localResults = JSON.parse(localStorage.getItem(`module_results_${sessionId}`) || '{}');
+                    localCount = Object.keys(localResults).length;
+                } catch (error) {
+                    console.error('Invalid local module results:', error);
+                }
             }
 
-            if (!currentSession.is_completed) {
+            if (!completedSession && localCount >= 4) {
+                completedSession = session || { id: sessionId };
+                completedSession.is_completed = true;
+            }
+            const sessionId = session ? (session.id || session.session_id) : null;
+            let localCount = 0;
+            if (sessionId) {
+                try {
+                    const localResults = JSON.parse(localStorage.getItem(`module_results_${sessionId}`) || '{}');
+                    localCount = Object.keys(localResults).length;
+                } catch (error) {
+                    console.error('Invalid local module results:', error);
+                }
+            }
+
+            if (!completedSession && localCount >= 4) {
+                completedSession = session || { id: sessionId };
+                completedSession.is_completed = true;
+            }
+
+            if (!completedSession) {
+                const stored = localStorage.getItem('last_completed_session');
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        if (parsed && parsed.is_completed) {
+                            completedSession = parsed;
+                        }
+                    } catch (error) {
+                        console.error('Invalid last_completed_session:', error);
+                    }
+                }
+            }
+
+            if (!completedSession) {
+                try {
+                    const history = await apiGetHistory(10);
+                    completedSession = history.find(item => item.is_completed);
+                } catch (error) {
+                    console.error('History load error:', error);
+                }
+            }
+
+            if (!completedSession) {
                 showAlert('Incomplete Modules', 'You need to complete all modules to see the results!', 'warning');
                 return;
             }
 
+            localStorage.setItem('current_session', JSON.stringify(completedSession));
+            localStorage.setItem('last_completed_session', JSON.stringify(completedSession));
             window.location.href = 'total.html';
         }
 
@@ -564,15 +617,44 @@
             window.location.href = `${moduleName}.html`;
         }
 
-        function viewResults() {
+        async function viewResults() {
             if (!isLoggedIn()) {
                 window.location.href = 'login.html';
                 return;
             }
-            if (!currentSession || !currentSession.is_completed) {
+            const session = currentSession || getCurrentSession();
+            let completedSession = session && session.is_completed ? session : null;
+
+            if (!completedSession) {
+                const stored = localStorage.getItem('last_completed_session');
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        if (parsed && parsed.is_completed) {
+                            completedSession = parsed;
+                        }
+                    } catch (error) {
+                        console.error('Invalid last_completed_session:', error);
+                    }
+                }
+            }
+
+            if (!completedSession) {
+                try {
+                    const history = await apiGetHistory(10);
+                    completedSession = history.find(item => item.is_completed);
+                } catch (error) {
+                    console.error('History load error:', error);
+                }
+            }
+
+            if (!completedSession) {
                 showAlert('Incomplete Modules', 'You need to complete all modules to see the results!', 'warning');
                 return;
             }
+
+            localStorage.setItem('current_session', JSON.stringify(completedSession));
+            localStorage.setItem('last_completed_session', JSON.stringify(completedSession));
             window.location.href = 'total.html';
         }
 

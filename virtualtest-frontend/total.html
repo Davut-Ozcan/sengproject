@@ -410,12 +410,80 @@
             }
         }
 
+        function getLocalModuleResults(sessionId) {
+            if (!sessionId) {
+                return [];
+            }
+            const stored = localStorage.getItem(`module_results_${sessionId}`);
+            if (!stored) {
+                return [];
+            }
+            try {
+                const data = JSON.parse(stored);
+                return Object.values(data).filter(item => item && item.module_name);
+            } catch (error) {
+                console.error('Invalid local module results:', error);
+                return [];
+            }
+        }
+
+        function buildLocalResult(localResults) {
+            const scores = localResults
+                .map(item => Number(item.score))
+                .filter(score => !Number.isNaN(score));
+            const overallScore = scores.length
+                ? scores.reduce((sum, score) => sum + score, 0) / scores.length
+                : 0;
+            return {
+                overall_score: overallScore,
+                overall_cefr_level: 'N/A',
+                module_results: localResults
+            };
+        }
+
         async function loadResults() {
             try {
-                const session = getCurrentSession();
+                let session = getCurrentSession();
+
+                if (!session || !session.is_completed) {
+                    const stored = localStorage.getItem('last_completed_session');
+                    if (stored) {
+                        try {
+                            const parsed = JSON.parse(stored);
+                            if (parsed && parsed.is_completed) {
+                                session = parsed;
+                                localStorage.setItem('current_session', JSON.stringify(session));
+                            }
+                        } catch (error) {
+                            console.error('Invalid last_completed_session:', error);
+                        }
+                    }
+                }
+
+                if (!session || !session.is_completed) {
+                    try {
+                        const history = await apiGetHistory(10);
+                        const completedSession = history.find(item => item.is_completed);
+                        if (completedSession) {
+                            session = completedSession;
+                            localStorage.setItem('current_session', JSON.stringify(session));
+                            localStorage.setItem('last_completed_session', JSON.stringify(session));
+                        }
+                    } catch (error) {
+                        console.error('History load error:', error);
+                    }
+                }
 
                 if (!session) {
                     showIncomplete('No test session found. Please start a new test.');
+                    hideLoading();
+                    return;
+                }
+
+                const sessionId = session.id || session.session_id;
+                const localResults = getLocalModuleResults(sessionId);
+                if (!session.is_completed && localResults.length >= 4) {
+                    displayResults(buildLocalResult(localResults));
                     hideLoading();
                     return;
                 }
@@ -438,7 +506,11 @@
 
                 // Fallback: localStorage'dan göster
                 const session = getCurrentSession();
-                if (session && session.is_completed) {
+                const sessionId = session ? (session.id || session.session_id) : null;
+                const localResults = getLocalModuleResults(sessionId);
+                if (localResults.length >= 4) {
+                    displayResults(buildLocalResult(localResults));
+                } else if (session && session.is_completed) {
                     displayResultsFromSession(session);
                 } else {
                     showIncomplete('Error loading results. Please try again.');

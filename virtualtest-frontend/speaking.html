@@ -534,6 +534,28 @@
                     if (!session.completed_modules.includes('speaking')) {
                         session.completed_modules.push('speaking');
                     }
+                    const resultsKey = `module_results_${sessionId}`;
+                    const moduleResults = JSON.parse(localStorage.getItem(resultsKey) || '{}');
+                    moduleResults.speaking = {
+                        module_name: 'speaking',
+                        score: result.score,
+                        cefr_level: result.cefr_level
+                    };
+                    localStorage.setItem(resultsKey, JSON.stringify(moduleResults));
+                    if (Object.keys(moduleResults).length >= 4) {
+                        session.is_completed = true;
+                        localStorage.setItem('last_completed_session', JSON.stringify(session));
+                    }
+                    if (result.is_test_completed) {
+                        session.is_completed = true;
+                        if (result.overall_score !== null && result.overall_score !== undefined) {
+                            session.overall_score = result.overall_score;
+                        }
+                        if (result.overall_cefr_level) {
+                            session.overall_cefr_level = result.overall_cefr_level;
+                        }
+                        localStorage.setItem('last_completed_session', JSON.stringify(session));
+                    }
                     localStorage.setItem('current_session', JSON.stringify(session));
                 }
 
