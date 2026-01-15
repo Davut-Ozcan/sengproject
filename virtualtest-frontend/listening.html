@@ -54,6 +54,7 @@
             height: 600px;
             align-items: stretch;
             overflow: hidden;
+            grid-template-columns: 1fr 1.6fr;
         }
 
         .pane-left {
@@ -157,43 +158,127 @@
             justify-content: center;
         }
 
-        .question-block {
-            background: white;
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 25px;
-            border: 2px solid #e2e8f0;
-        }
-
-        .question-block.answered {
-            border-color: #22c55e;
-        }
-
-        .q-header {
+        .question-nav {
             display: flex;
-            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .q-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
             align-items: center;
-            margin-bottom: 15px;
+            justify-content: center;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .q-dot.active {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .q-dot.answered {
+            background: #22c55e;
+            color: white;
+        }
+
+        .btn-nav {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-prev,
+        .btn-next,
+        .btn-submit {
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-prev {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-next {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .btn-submit {
+            background: #22c55e;
+            color: white;
+        }
+
+        .btn-prev:hover {
+            background: #cbd5e1;
+        }
+
+        .btn-next:hover {
+            background: #6d28d9;
+        }
+
+        .btn-submit:hover {
+            background: #16a34a;
+        }
+
+        .btn-prev:disabled,
+        .btn-next:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar .fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .f-purple {
+            background: #7c3aed;
         }
 
         .q-text {
             font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
             color: #1e293b;
             font-weight: 600;
-            margin-bottom: 20px;
         }
 
         .options-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .option-item {
             display: flex;
             align-items: center;
-            padding: 14px 18px;
-            background: #faf5ff;
+            padding: 16px 20px;
+            background: white;
             border: 2px solid #e2e8f0;
             border-radius: 12px;
             cursor: pointer;
@@ -202,54 +287,34 @@
 
         .option-item:hover {
             border-color: #7c3aed;
+            background: #faf5ff;
         }
 
         .option-item.selected {
             border-color: #7c3aed;
-            background: #ede9fe;
+            background: #faf5ff;
         }
 
         .option-item input {
             display: none;
         }
 
-        .circle {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #cbd5e1;
-            border-radius: 50%;
-            margin-right: 12px;
-            transition: all 0.3s;
-        }
-
-        .option-item.selected .circle {
-            border-color: #7c3aed;
-            background: #7c3aed;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #7c3aed, #a855f7);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
+        .option-letter {
+            width: 32px;
+            height: 32px;
+            background: #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 20px;
+            margin-right: 15px;
+            color: #64748b;
         }
 
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
-        }
-
-        .btn-submit:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
+        .option-item.selected .option-letter {
+            background: #7c3aed;
+            color: white;
         }
     </style>
 </head>
@@ -322,10 +387,36 @@
 
                     <!-- Sağ Panel: Sorular -->
                     <div class="pane-right">
-                        <div id="questions-container"></div>
-                        <button class="btn-submit" id="btn-submit" onclick="submitAnswers()" disabled>
-                            <i class="fa-solid fa-paper-plane"></i> Submit Answers
-                        </button>
+                        <!-- Soru Navigasyonu -->
+                        <div class="question-nav" id="question-nav">
+                            <!-- JS ile doldurulacak -->
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="progress-bar">
+                            <div class="fill f-purple" id="progress-fill" style="width: 0%"></div>
+                        </div>
+
+                        <!-- Soru Alanı -->
+                        <div id="question-area">
+                            <p class="q-text" id="question-text">Loading question...</p>
+                            <div class="options-list" id="options-list">
+                                <!-- JS ile doldurulacak -->
+                            </div>
+                        </div>
+
+                        <!-- Navigasyon Butonları -->
+                        <div class="btn-nav">
+                            <button class="btn-prev" id="btn-prev" onclick="prevQuestion()">
+                                <i class="fa-solid fa-arrow-left"></i> Previous
+                            </button>
+                            <button class="btn-next" id="btn-next" onclick="nextQuestion()">
+                                Next <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                            <button class="btn-submit" id="btn-submit" onclick="submitAnswers()" style="display: none;">
+                                Submit <i class="fa-solid fa-check"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -353,6 +444,7 @@
         let moduleContent = null;
         let questions = [];
         let userAnswers = [];
+        let currentQuestionIndex = 0;
         let sessionId = null;
         let audioPlayed = false;
         let timerInterval = null;
@@ -454,39 +546,119 @@
             questions = moduleContent.questions || [];
             userAnswers = new Array(questions.length).fill(null);
 
-            // Soruları göster
-            const container = document.getElementById('questions-container');
-            container.innerHTML = '';
+            // Soru navigasyonunu oluştur
+            createQuestionNav();
+
+            // İlk soruyu göster
+            showQuestion(0);
+        }
+
+        function createQuestionNav() {
+            const nav = document.getElementById('question-nav');
+            if (!nav) return;
+            nav.innerHTML = '';
 
             questions.forEach((q, index) => {
-                const block = document.createElement('div');
-                block.className = 'question-block';
-                block.id = `question-${index}`;
+                const dot = document.createElement('div');
+                dot.className = 'q-dot' + (index === 0 ? ' active' : '');
+                dot.textContent = index + 1;
+                dot.onclick = () => goToQuestion(index);
+                nav.appendChild(dot);
+            });
+        }
 
-                let optionsHtml = '';
-                q.options.forEach((opt, optIndex) => {
-                    optionsHtml += `
-                        <label class="option-item" onclick="selectAnswer(${index}, ${optIndex})">
-                            <input type="radio" name="q${index}">
-                            <span class="circle"></span>
-                            ${opt}
-                        </label>
+        function showQuestion(index) {
+            if (index < 0 || index >= questions.length) return;
+
+            currentQuestionIndex = index;
+            const question = questions[index];
+
+            // Soru metnini güncelle
+            document.getElementById('question-text').textContent =
+                `Question ${index + 1}: ${question.question_text}`;
+
+            // Seçenekleri göster
+            const optionsList = document.getElementById('options-list');
+            optionsList.innerHTML = '';
+
+            const letters = ['A', 'B', 'C', 'D'];
+
+            // Seçenekler bazen obje bazen string array olabilir, kontrol et
+            let options = question.options;
+            if (!options && question.choices) options = question.choices; // Bazı AI'lar 'choices' der
+
+            if (options) {
+                options.forEach((option, optIndex) => {
+                    const div = document.createElement('div');
+                    div.className = 'option-item' + (userAnswers[index] === optIndex ? ' selected' : '');
+
+                    // Seçenek içeriği (eğer obje ise .text özelliğini al)
+                    const optionText = typeof option === 'object' ? option.text : option;
+
+                    div.innerHTML = `
+                        <span class="option-letter">${letters[optIndex] || '-'}</span>
+                        <span>${optionText}</span>
                     `;
+                    div.onclick = () => selectOption(optIndex);
+                    optionsList.appendChild(div);
                 });
+            }
 
-                block.innerHTML = `
-                    <div class="q-header">
-                        <span class="tag t-bg-purple">Question ${index + 1}</span>
-                        <span>${q.weight || 33} Points</span>
-                    </div>
-                    <p class="q-text">${q.question_text}</p>
-                    <div class="options-list">${optionsHtml}</div>
-                `;
+            // Progress bar güncelle
+            const progress = ((index + 1) / questions.length) * 100;
+            const fill = document.getElementById('progress-fill');
+            if (fill) fill.style.width = `${progress}%`;
 
-                container.appendChild(block);
+            // Navigasyon noktalarını güncelle
+            document.querySelectorAll('.q-dot').forEach((dot, i) => {
+                dot.classList.remove('active');
+                if (i === index) dot.classList.add('active');
+                if (userAnswers[i] !== null) dot.classList.add('answered');
             });
 
-            console.log('Content displayed, questions:', questions.length);
+            // Butonları güncelle
+            const prevBtn = document.getElementById('btn-prev');
+            const nextBtn = document.getElementById('btn-next');
+            const submitBtn = document.getElementById('btn-submit');
+
+            if (prevBtn) prevBtn.disabled = index === 0;
+
+            if (index === questions.length - 1) {
+                if (nextBtn) nextBtn.style.display = 'none';
+                if (submitBtn) submitBtn.style.display = 'flex';
+            } else {
+                if (nextBtn) nextBtn.style.display = 'flex';
+                if (submitBtn) submitBtn.style.display = 'none';
+            }
+        }
+
+        function selectOption(optIndex) {
+            userAnswers[currentQuestionIndex] = optIndex;
+
+            // Seçili görünümü güncelle
+            document.querySelectorAll('.option-item').forEach((item, i) => {
+                item.classList.toggle('selected', i === optIndex);
+            });
+
+            // Nav dot'u güncelle
+            const dots = document.querySelectorAll('.q-dot');
+            if (dots[currentQuestionIndex]) dots[currentQuestionIndex].classList.add('answered');
+        }
+
+        function goToQuestion(index) {
+            showQuestion(index);
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                showQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                showQuestion(currentQuestionIndex + 1);
+            }
         }
 
         async function playAudio() {
@@ -527,7 +699,11 @@
 
             audio.addEventListener('ended', function () {
                 playBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
-                document.getElementById('btn-submit').disabled = false;
+                // Audio bitince submit butonu enable olmalı mı? Pagination'da bu biraz farklı.
+                // Pagination'da kullanıcı son soruya gelmeden submit çıkmıyor zaten.
+                // Ama belki audio dinlenmeden submit yapılamaz kuralı varsa burada bir state tutmak gerekebilir.
+                // Şimdilik existing logic sadece butonu enable ediyordu. 
+                // Bizim yeni logic'te btn-submit sondaki soruda çıkıyor.
             });
         }
 
@@ -551,7 +727,6 @@
                 if (progress >= duration) {
                     clearInterval(interval);
                     playBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
-                    document.getElementById('btn-submit').disabled = false;
                 }
             }, 1000);
         }
@@ -562,17 +737,7 @@
             return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
 
-        function selectAnswer(questionIndex, optionIndex) {
-            userAnswers[questionIndex] = optionIndex;
-
-            const block = document.getElementById(`question-${questionIndex}`);
-            block.classList.add('answered');
-
-            const options = block.querySelectorAll('.option-item');
-            options.forEach((opt, i) => {
-                opt.classList.toggle('selected', i === optionIndex);
-            });
-        }
+        // selectAnswer işlevi yukarıda tanımlandı.
 
         async function submitAnswers() {
             const unanswered = userAnswers.filter(a => a === null).length;
@@ -586,29 +751,22 @@
             showLoading('Submitting answers...');
 
             try {
-                // ✅ YENİ (AKILLI) HALİ:
-                // AI bazen cevabı "Metin" olarak, bazen "Sayı" olarak veriyor.
-                // Biz burada hepsini Backend'in sevdiği "Sayı"ya (Index) çeviriyoruz.
                 const correctAnswers = questions.map(q => {
                     // Durum 1: AI zaten sayı vermiş (0, 1, 2) -> Aynen kullan.
                     if (typeof q.correct_answer === 'number') {
                         return q.correct_answer;
                     }
 
-                    // Durum 2: AI metin vermiş ("To enhance...") -> Şıkların içinde ara ve sırasını bul.
                     if (typeof q.correct_answer === 'string') {
-                        // Şıkkı bul (Boşlukları temizleyerek karşılaştır)
                         const index = q.options.findIndex(opt =>
                             opt.trim() === q.correct_answer.trim() || // Tam eşleşme
                             opt.includes(q.correct_answer) ||         // İçinde geçiyor mu?
                             q.correct_answer.includes(opt)            // Tersine kontrol
                         );
 
-                        // Bulduysan o sayıyı döndür, bulamadıysan 0 (ilk şık) varsay.
                         return index !== -1 ? index : 0;
                     }
 
-                    // Ne olduğunu anlamadık, 0 dönelim patlamasın.
                     return 0;
                 });
                 const weights = questions.map(q => q.weight || 33);
