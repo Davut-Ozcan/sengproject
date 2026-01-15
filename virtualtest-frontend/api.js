@@ -214,6 +214,20 @@ async function apiGetResult(sessionId) {
     return await response.json();
 }
 
+async function apiGetHistory(limit = 10) {
+    const response = await fetch(`${API_BASE_URL}/test/history?limit=${limit}`, {
+        headers: {
+            'Authorization': `Bearer ${getToken()}`
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error('History could not be retrieved');
+    }
+
+    return await response.json();
+}
+
 // ==========================================
 // YARDIMCI FONKSİYONLAR
 // ==========================================

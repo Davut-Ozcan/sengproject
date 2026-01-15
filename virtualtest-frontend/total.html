@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
         .loading-overlay {
@@ -281,6 +282,125 @@
             color: #b45309;
             margin-bottom: 30px;
         }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .cc-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .cc-icon {
+            width: 36px;
+            height: 36px;
+            background: #eff6ff;
+            color: #3b82f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .cc-title {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 1.2rem;
+        }
+
+        .feedback-section {
+            margin-bottom: 40px;
+        }
+
+        .fs-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 25px;
+        }
+
+        .feedback-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .fb-card {
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid transparent;
+        }
+
+        .fb-blue {
+            background: #eff6ff;
+            border-color: #dbeafe;
+        }
+
+        .fb-purple {
+            background: #f3e8ff;
+            border-color: #e9d5ff;
+        }
+
+        .fb-green {
+            background: #f0fdf4;
+            border-color: #dcfce7;
+        }
+
+        .fb-orange {
+            background: #fff7ed;
+            border-color: #ffedd5;
+        }
+
+        .fb-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .fb-icon {
+            font-size: 1.8rem;
+        }
+
+        .fb-name {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #334155;
+        }
+
+        .fb-score {
+            margin-left: auto;
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: #0f172a;
+        }
+
+        .fb-text {
+            font-size: 1rem;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .charts-row,
+            .feedback-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -343,9 +463,32 @@
                     </p>
                 </div>
 
-                <!-- Module Results Grid -->
-                <div class="modules-grid" id="modules-grid">
-                    <!-- JS ile doldurulacak -->
+                <div class="charts-row">
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="cc-icon"><i class="fa-solid fa-chart-simple"></i></div>
+                            <span class="cc-title">Skill Breakdown</span>
+                        </div>
+                        <div style="height: 420px;">
+                            <canvas id="barChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="cc-icon"><i class="fa-solid fa-ribbon"></i></div>
+                            <span class="cc-title">Proficiency Overview</span>
+                        </div>
+                        <div style="height: 420px;">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feedback-section">
+                    <h3 class="fs-title">Detailed Feedback</h3>
+                    <div class="feedback-grid" id="feedback-grid">
+                        <!-- JS ile doldurulacak -->
+                    </div>
                 </div>
 
                 <!-- Action Buttons -->
@@ -394,6 +537,23 @@
             'writing': 'fa-pen-nib'
         };
 
+        const moduleColors = {
+            'reading': '#3b82f6',
+            'writing': '#a855f7',
+            'listening': '#10b981',
+            'speaking': '#f97316'
+        };
+
+        const moduleCardClasses = {
+            'reading': 'fb-blue',
+            'writing': 'fb-purple',
+            'listening': 'fb-green',
+            'speaking': 'fb-orange'
+        };
+
+        let barChartInstance = null;
+        let radarChartInstance = null;
+
         document.addEventListener('DOMContentLoaded', async function () {
             if (!isLoggedIn()) {
                 window.location.href = 'login.html';
@@ -410,12 +570,80 @@
             }
         }
 
+        function getLocalModuleResults(sessionId) {
+            if (!sessionId) {
+                return [];
+            }
+            const stored = localStorage.getItem(`module_results_${sessionId}`);
+            if (!stored) {
+                return [];
+            }
+            try {
+                const data = JSON.parse(stored);
+                return Object.values(data).filter(item => item && item.module_name);
+            } catch (error) {
+                console.error('Invalid local module results:', error);
+                return [];
+            }
+        }
+
+        function buildLocalResult(localResults) {
+            const scores = localResults
+                .map(item => Number(item.score))
+                .filter(score => !Number.isNaN(score));
+            const overallScore = scores.length
+                ? scores.reduce((sum, score) => sum + score, 0) / scores.length
+                : 0;
+            return {
+                overall_score: overallScore,
+                overall_cefr_level: 'N/A',
+                module_results: localResults
+            };
+        }
+
         async function loadResults() {
             try {
-                const session = getCurrentSession();
+                let session = getCurrentSession();
+
+                if (!session || !session.is_completed) {
+                    const stored = localStorage.getItem('last_completed_session');
+                    if (stored) {
+                        try {
+                            const parsed = JSON.parse(stored);
+                            if (parsed && parsed.is_completed) {
+                                session = parsed;
+                                localStorage.setItem('current_session', JSON.stringify(session));
+                            }
+                        } catch (error) {
+                            console.error('Invalid last_completed_session:', error);
+                        }
+                    }
+                }
+
+                if (!session || !session.is_completed) {
+                    try {
+                        const history = await apiGetHistory(10);
+                        const completedSession = history.find(item => item.is_completed);
+                        if (completedSession) {
+                            session = completedSession;
+                            localStorage.setItem('current_session', JSON.stringify(session));
+                            localStorage.setItem('last_completed_session', JSON.stringify(session));
+                        }
+                    } catch (error) {
+                        console.error('History load error:', error);
+                    }
+                }
 
                 if (!session) {
                     showIncomplete('No test session found. Please start a new test.');
+                    hideLoading();
+                    return;
+                }
+
+                const sessionId = session.id || session.session_id;
+                const localResults = getLocalModuleResults(sessionId);
+                if (!session.is_completed && localResults.length >= 4) {
+                    displayResults(buildLocalResult(localResults));
                     hideLoading();
                     return;
                 }
@@ -428,7 +656,7 @@
                     return;
                 }
 
-                // Sonuçları API'den al
+                // Fetch results from the API
                 const result = await apiGetResult(session.id);
                 displayResults(result);
                 hideLoading();
@@ -436,9 +664,13 @@
             } catch (error) {
                 console.error('Error loading results:', error);
 
-                // Fallback: localStorage'dan göster
+                // Fallback: use localStorage
                 const session = getCurrentSession();
-                if (session && session.is_completed) {
+                const sessionId = session ? (session.id || session.session_id) : null;
+                const localResults = getLocalModuleResults(sessionId);
+                if (localResults.length >= 4) {
+                    displayResults(buildLocalResult(localResults));
+                } else if (session && session.is_completed) {
                     displayResultsFromSession(session);
                 } else {
                     showIncomplete('Error loading results. Please try again.');
@@ -457,44 +689,27 @@
             document.getElementById('incomplete-message').style.display = 'none';
             document.getElementById('results-content').style.display = 'block';
 
-            // Ana skor kartı
+            // Main score card
             document.getElementById('cefr-level').textContent = result.overall_cefr_level || 'N/A';
-            document.getElementById('overall-score').textContent = Math.round(result.overall_score || 0);
             document.getElementById('cefr-description').textContent =
                 cefrDescriptions[result.overall_cefr_level] || 'Level description not available.';
 
-            // Modül sonuçları
-            const grid = document.getElementById('modules-grid');
-            grid.innerHTML = '';
-
+            // Module results
             const moduleResults = result.module_results || [];
+            const scoreValues = moduleResults
+                .map(mod => Number(mod.score))
+                .filter(score => Number.isFinite(score));
+            let overallScore = Number(result.overall_score);
+            if (!Number.isFinite(overallScore)) {
+                overallScore = scoreValues.length
+                    ? scoreValues.reduce((sum, score) => sum + score, 0) / scoreValues.length
+                    : 0;
+            }
+            document.getElementById('overall-score').textContent = Math.round(overallScore);
 
-            moduleResults.forEach(mod => {
-                const card = document.createElement('div');
-                card.className = 'module-result-card';
 
-                const moduleName = mod.module_name.toLowerCase();
-                const icon = moduleIcons[moduleName] || 'fa-check';
-                const score = Math.round(mod.score || 0);
-
-                card.innerHTML = `
-                    <div class="module-header">
-                        <div class="module-icon ${moduleName}">
-                            <i class="fa-solid ${icon}"></i>
-                        </div>
-                        <span class="module-name">${capitalize(mod.module_name)}</span>
-                    </div>
-                    <div class="module-score">
-                        <span class="score-value">${score}</span>
-                        <span class="score-cefr">${mod.cefr_level || 'N/A'}</span>
-                    </div>
-                    <div class="score-bar">
-                        <div class="fill ${moduleName}" style="width: ${score}%"></div>
-                    </div>
-                `;
-
-                grid.appendChild(card);
-            });
+            renderCharts(moduleResults);
+            renderFeedback(moduleResults);
         }
 
         function displayResultsFromSession(session) {
@@ -506,31 +721,145 @@
             document.getElementById('cefr-description').textContent =
                 cefrDescriptions[session.overall_cefr_level] || cefrDescriptions['B1'];
 
-            // Placeholder modül sonuçları
-            const grid = document.getElementById('modules-grid');
+            // Placeholder module results
             grid.innerHTML = '';
 
-            ['reading', 'listening', 'speaking', 'writing'].forEach(moduleName => {
+            const fallbackResults = ['reading', 'listening', 'speaking', 'writing'].map(name => ({
+                module_name: name,
+                score: 0,
+                cefr_level: 'N/A'
+            }));
+            renderCharts(fallbackResults);
+            renderFeedback(fallbackResults);
+        }
+
+        function renderCharts(moduleResults) {
+            const labels = ['Reading', 'Writing', 'Listening', 'Speaking'];
+            const scoresByModule = {
+                reading: 0,
+                writing: 0,
+                listening: 0,
+                speaking: 0
+            };
+            moduleResults.forEach(mod => {
+                const name = String(mod.module_name || '').toLowerCase();
+                if (name in scoresByModule) {
+                    scoresByModule[name] = Math.round(Number(mod.score || 0));
+                }
+            });
+
+            const barData = [
+                scoresByModule.reading,
+                scoresByModule.writing,
+                scoresByModule.listening,
+                scoresByModule.speaking
+            ];
+
+            if (barChartInstance) {
+                barChartInstance.destroy();
+            }
+            if (radarChartInstance) {
+                radarChartInstance.destroy();
+            }
+
+            const ctxBar = document.getElementById('barChart');
+            if (ctxBar) {
+                barChartInstance = new Chart(ctxBar.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Score',
+                            data: barData,
+                            backgroundColor: ['#3b82f6', '#a855f7', '#10b981', '#f97316'],
+                            borderRadius: 8,
+                            barThickness: 50
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            const ctxRadar = document.getElementById('radarChart');
+            if (ctxRadar) {
+                radarChartInstance = new Chart(ctxRadar.getContext('2d'), {
+                    type: 'radar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Proficiency',
+                            data: barData,
+                            fill: true,
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: '#3b82f6',
+                            pointBackgroundColor: '#3b82f6',
+                            pointBorderColor: '#fff',
+                            pointHoverBorderColor: '#3b82f6'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        elements: { line: { borderWidth: 3 } },
+                        scales: {
+                            r: {
+                                angleLines: { display: true, color: '#e2e8f0' },
+                                grid: { color: '#e2e8f0' },
+                                suggestedMin: 0,
+                                suggestedMax: 100,
+                                ticks: { display: false, backdropColor: "transparent" }
+                            }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        }
+
+        function getFeedbackText(score) {
+            if (score >= 85) {
+                return 'Excellent performance. Keep practicing to maintain this high level.';
+            }
+            if (score >= 70) {
+                return 'Good performance. Focus on consistency to push to the next level.';
+            }
+            if (score >= 50) {
+                return 'Fair performance. Target weak areas with regular practice.';
+            }
+            return 'Needs improvement. Dedicate more time to structured practice.';
+        }
+
+        function renderFeedback(moduleResults) {
+            const grid = document.getElementById('feedback-grid');
+            if (!grid) {
+                return;
+            }
+
+            moduleResults.forEach(mod => {
+                const moduleName = String(mod.module_name || '').toLowerCase();
+                const score = Math.round(Number(mod.score || 0));
+                const icon = moduleIcons[moduleName] || 'fa-check';
+                const color = moduleColors[moduleName] || '#3b82f6';
+                const cardClass = moduleCardClasses[moduleName] || 'fb-blue';
+
                 const card = document.createElement('div');
-                card.className = 'module-result-card';
-                const icon = moduleIcons[moduleName];
-
+                card.className = `fb-card ${cardClass}`;
                 card.innerHTML = `
-                    <div class="module-header">
-                        <div class="module-icon ${moduleName}">
-                            <i class="fa-solid ${icon}"></i>
-                        </div>
-                        <span class="module-name">${capitalize(moduleName)}</span>
+                    <div class="fb-header">
+                        <i class="fa-solid ${icon} fb-icon" style="color:${color}"></i>
+                        <span class="fb-name">${capitalize(moduleName)}</span>
+                        <span class="fb-score" style="color:${color}">${score}/100</span>
                     </div>
-                    <div class="module-score">
-                        <span class="score-value">--</span>
-                        <span class="score-cefr">N/A</span>
-                    </div>
-                    <div class="score-bar">
-                        <div class="fill ${moduleName}" style="width: 0%"></div>
-                    </div>
+                    <p class="fb-text">${getFeedbackText(score)}</p>
                 `;
-
                 grid.appendChild(card);
             });
         }
