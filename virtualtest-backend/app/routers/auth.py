@@ -217,7 +217,12 @@ async def register(
         )
     
     # 4. Token oluştur
-    access_token = create_access_token(data={"sub": str(new_user.id)})
+    access_token = create_access_token(
+    data={
+        "sub": str(new_user.id), 
+        "role": new_user.role  # Rol bilgisini (Student/Admin) ekledik
+     }
+  )
     
     return RegisterResponse(
         message="Kayıt başarılı",
@@ -270,7 +275,12 @@ async def login(
         )
     
     # Token oluştur
-    access_token = create_access_token(data={"sub": str(user.id)})
+    access_token = create_access_token(
+    data={
+        "sub": str(user.id), 
+        "role": user.role  
+    }
+)
     
     return LoginResponse(
         access_token=access_token,
@@ -378,7 +388,12 @@ async def login(
             detail=f"Hesap durumu: {user.account_status}"
         )
     
-    access_token = create_access_token(data={"sub": str(user.id)})
+    access_token = create_access_token(
+    data={
+        "sub": str(user.id), 
+        "role": user.role  
+    }
+)
     
     return LoginResponse(
         access_token=access_token,

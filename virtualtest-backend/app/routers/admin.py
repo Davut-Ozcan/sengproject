@@ -34,7 +34,7 @@ router = APIRouter(
 
 # --- Yetki Kontrolü ---
 def check_admin_privileges(user: User):
-    if user.role != "admin":  # Rol kontrolü (büyük/küçük harfe dikkat et, veritabanında nasılsa öyle olmalı)
+    if user.role != "Admin":  # Rol kontrolü (büyük/küçük harfe dikkat et, veritabanında nasılsa öyle olmalı)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Bu işlem için Admin yetkisi gerekiyor."
