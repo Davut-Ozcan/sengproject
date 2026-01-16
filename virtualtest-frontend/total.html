@@ -587,16 +587,29 @@
             }
         }
 
+        function calculateCefrFromScore(score) {
+            if (score >= 85) return 'C1';
+            if (score >= 70) return 'B2';
+            if (score >= 50) return 'B1';
+            if (score >= 30) return 'A2';
+            return 'A1';
+        }
+
         function buildLocalResult(localResults) {
             const scores = localResults
                 .map(item => Number(item.score))
                 .filter(score => !Number.isNaN(score));
+
             const overallScore = scores.length
                 ? scores.reduce((sum, score) => sum + score, 0) / scores.length
                 : 0;
+
+            // Kral hareket: "N/A" yerine hesaplama yapıyoruz
+            const calculatedCefr = calculateCefrFromScore(overallScore);
+
             return {
                 overall_score: overallScore,
-                overall_cefr_level: 'N/A',
+                overall_cefr_level: calculatedCefr, // Artık "N/A" değil, gerçek seviye dönecek! ✅
                 module_results: localResults
             };
         }
@@ -689,10 +702,18 @@
             document.getElementById('incomplete-message').style.display = 'none';
             document.getElementById('results-content').style.display = 'block';
 
+            // Eğer API'den CEFR boş geldiyse, puana bakıp biz dolduralım
+            let displayCefr = result.overall_cefr_level;
+            if (!displayCefr || displayCefr === 'N/A') {
+                displayCefr = calculateCefrFromScore(result.overall_score || 0);
+            }
+
             // Main score card
-            document.getElementById('cefr-level').textContent = result.overall_cefr_level || 'N/A';
+            document.getElementById('cefr-level').textContent = displayCefr;
             document.getElementById('cefr-description').textContent =
-                cefrDescriptions[result.overall_cefr_level] || 'Level description not available.';
+                cefrDescriptions[displayCefr] || 'Level description not available.';
+
+            // ... fonksiyonun geri kalanı aynı ...
 
             // Module results
             const moduleResults = result.module_results || [];
