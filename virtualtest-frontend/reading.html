@@ -642,10 +642,10 @@
                 showLoading('AI Generating Content...');
 
                 // AI'dan içerik al
-                console.log("Reading Modülü başlatılıyor, Session ID:", sessionId);
+                console.log("Initializing Reading Module, Session ID:", sessionId);
                 const response = await apiStartModule(sessionId, 'reading', 'B1');
                 
-                console.log("Backend'den gelen ham veri:", response); // Hata ayıklama için
+                console.log("Raw data from backend:", response); // Hata ayıklama için
 
                 // --- ÖNEMLİ DÜZELTME BURADA ---
                 // Veri yapısını kontrol et ve esnek davran
@@ -656,7 +656,7 @@
                     // Alternatif format: { text: "...", questions: [...] }
                     moduleContent = response;
                 } else {
-                    console.error("Tanınmayan veri formatı:", response);
+                    console.error("Unrecognized data format:", response);
                     throw new Error("AI returned data in an unexpected format.");
                 }
 
@@ -680,7 +680,7 @@
 
         function displayContent() {
             if (!moduleContent) {
-                console.error("Gösterilecek içerik yok!");
+                console.error("No content to display!");
                 return;
             }
 

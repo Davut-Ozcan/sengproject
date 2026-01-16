@@ -133,13 +133,13 @@ class UserRepository:
             await db.commit()
             await db.refresh(new_user)
             
-            print(f"✅ UserRepository: Kullanıcı oluşturuldu ({email})")
+            print(f"✅ UserRepository: User created successfully ({email})")
             return new_user
             
         except IntegrityError:
             # Email zaten var
             await db.rollback()
-            print(f"⚠️ UserRepository: Email zaten kayıtlı ({email})")
+            print(f"⚠️ UserRepository: Email already registered ({email})")
             return None
         except Exception as e:
             await db.rollback()
@@ -180,7 +180,7 @@ class UserRepository:
             )
             await db.commit()
             
-            print(f"✅ UserRepository: Durum güncellendi (ID:{user_id} -> {status})")
+            print(f"✅ UserRepository: Status updated (ID:{user_id} -> {status})")
             return True
             
         except Exception as e:

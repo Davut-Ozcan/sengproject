@@ -105,7 +105,7 @@ async def create_tables():
     """
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    print("✅ Database: Tablolar oluşturuldu")
+    print("✅ Database: Tables created successfully.")
 
 
 async def drop_tables():
@@ -117,4 +117,4 @@ async def drop_tables():
     """
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
-    print("⚠️ Database: Tablolar silindi")
+    print("⚠️ Database: Tables dropped.")

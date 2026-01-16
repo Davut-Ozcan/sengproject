@@ -320,7 +320,7 @@ async function apiAdminGetConfig() {
     });
     
     if (!response.ok) {
-        if (response.status === 403) throw new Error("Unauthorized Access / Yetkisiz Erişim");
+        if (response.status === 403) throw new Error("Unauthorized Access ");
         throw new Error('Configuration could not be retrieved');
     }
     

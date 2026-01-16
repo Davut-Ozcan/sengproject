@@ -66,18 +66,18 @@ async def lifespan(app: FastAPI):
     """
     # ===== BAŞLANGIÇ =====
     print("=" * 50)
-    print("🚀 VirtuaTest API Başlatılıyor...")
+    print("🚀 Starting VirtuaTest API...")
     print("=" * 50)
     
     # Database tablolarını oluştur
     try:
         await create_tables()
-        print("✅ Database tabloları hazır")
+        print("✅ Database tables are ready")
     except Exception as e:
-        print(f"❌ Database hatası: {e}")
-        print("⚠️  PostgreSQL çalışıyor mu kontrol edin!")
+        print(f"❌ Database error: {e}")
+        print("⚠️  Check if PostgreSQL is running!")
     
-    print(f"📍 API Adresi: http://localhost:8000")
+    print(f"📍 API Address: http://localhost:8000")
     print(f"📚 Swagger UI: http://localhost:8000/docs")
     print(f"📋 ReDoc: http://localhost:8000/redoc")
     print("=" * 50)
@@ -87,12 +87,12 @@ async def lifespan(app: FastAPI):
     
     # ===== KAPANIŞ =====
     print("=" * 50)
-    print("👋 VirtuaTest API Kapatılıyor...")
+    print("👋 Shutting down VirtuaTest API...")
     
     # Engine'i kapat
     await engine.dispose()
     
-    print("✅ Bağlantılar temizlendi")
+    print("✅ Connections cleaned up")
     print("=" * 50)
 
 
@@ -251,8 +251,8 @@ app.include_router(
 @app.get(
     "/",
     tags=["Root"],
-    summary="API Durumu",
-    description="API'nin çalışıp çalışmadığını kontrol eder."
+    summary="API Statu",
+    description="Checks if the API is running."
 )
 async def root():
     """
@@ -263,7 +263,7 @@ async def root():
     """
     return {
         "status": "online",
-        "message": "VirtuaTest API'ye hoş geldiniz!",
+        "message": "Welcome to VirtuaTest API!",
         "version": settings.API_VERSION,
         "docs": "/docs",
         "endpoints": {
@@ -276,8 +276,8 @@ async def root():
 @app.get(
     "/health",
     tags=["Root"],
-    summary="Sağlık Kontrolü",
-    description="API ve database durumunu kontrol eder."
+    summary="Health Check",
+    description="Checks API and database status."
 )
 async def health_check():
     """

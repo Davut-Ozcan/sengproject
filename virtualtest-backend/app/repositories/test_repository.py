@@ -60,7 +60,7 @@ class TestResultRepository:
             await db.commit()
             await db.refresh(new_session)
             
-            print(f"✅ TestRepository: Oturum oluşturuldu (Student:{student_id})")
+            print(f"TestRepository: Session created successfully (Student:{student_id})")
             return new_session
             
         except Exception as e:
@@ -119,7 +119,7 @@ class TestResultRepository:
             db.add(new_score)
             await db.commit()
             
-            print(f"✅ TestRepository: Puan kaydedildi ({module}: {score})")
+            print(f"✅ TestRepository: Score saved successfully ({module}: {score})")
             return True
             
         except Exception as e:
@@ -245,7 +245,7 @@ class TestResultRepository:
             )
             await db.commit()
             
-            print(f"✅ TestRepository: Final sonuç kaydedildi ({cefr_level})")
+            print(f"✅ TestRepository: Final result saved successfully ({cefr_level})")
             return True
             
         except Exception as e:

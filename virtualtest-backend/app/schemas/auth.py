@@ -39,13 +39,13 @@ class LoginRequest(BaseModel):
     
     email: EmailStr = Field(
         ...,
-        description="Kullanıcı email adresi"
+        description="User email address"
     )
     
     password: str = Field(
         ...,
         min_length=1,  # Login'de uzunluk kontrolü gevşek
-        description="Kullanıcı şifresi"
+        description="User password"
     )
 
 
@@ -79,7 +79,7 @@ class LoginResponse(BaseModel):
     # "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..."
     token_type: str = Field(
         default="bearer",
-        description="Token tipi"
+        description="Token type"
     )
     
     # Kullanıcı bilgileri (opsiyonel)
@@ -110,14 +110,14 @@ class RegisterRequest(BaseModel):
     
     email: EmailStr = Field(
         ...,
-        description="Email adresi (benzersiz olmalı)"
+        description="Email address (must be unique)"
     )
     
     password: str = Field(
         ...,
         min_length=8,
         max_length=100,
-        description="Şifre (minimum 8 karakter)"
+        description="Password (minimum 8 characters)"
     )
     
     # Şifre tekrarı (frontend'de eşleşme kontrolü için)
@@ -147,11 +147,11 @@ class RegisterRequest(BaseModel):
         
         # Check basic format / Temel formatı kontrol et
         if not re.match(email_regex, v):
-            raise ValueError('Invalid email format. Use example@domain.com / Geçersiz email formatı. Lütfen example@domain.com şeklinde yazın.')
+            raise ValueError('Invalid email format. Use hakancaglar@ankarbilim.edu.tr')
         
         # Check for empty spaces / Boşluk kontrolü
         if " " in v:
-            raise ValueError('Email cannot contain spaces / Email adresi boşluk içeremez.')
+            raise ValueError('Email cannot contain spaces.')
             
         return v.lower() # Normalize to lowercase / Küçük harfe dönüştürerek standartlaştır
 
@@ -202,8 +202,8 @@ class RegisterResponse(BaseModel):
     """
     
     message: str = Field(
-        default="Kayıt başarılı",
-        description="Başarı mesajı"
+        default="Registration successful",
+        description="Success message"
     )
     
     user_id: int
@@ -267,19 +267,19 @@ class PasswordChange(BaseModel):
     
     current_password: str = Field(
         ...,
-        description="Mevcut şifre"
+        description="Current password"
     )
     
     new_password: str = Field(
         ...,
         min_length=6,
         max_length=100,
-        description="Yeni şifre (min 6 karakter)"
+        description="New password (minimum 8 characters)"
     )
     
     new_password_confirm: str = Field(
         ...,
-        description="Yeni şifre tekrarı"
+        description="New password confirmation"
     )
 
 
@@ -313,7 +313,7 @@ class PasswordResetConfirm(BaseModel):
     
     token: str = Field(
         ...,
-        description="Email'deki sıfırlama token'ı"
+        description="Reset token from email"
     )
     
     new_password: str = Field(
