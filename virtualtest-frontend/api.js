@@ -49,12 +49,12 @@ async function apiLogin(email, password) {
             'password': password
         })
     });
-    
+
     if (!response.ok) {
         const error = await response.json();
         throw new Error(error.detail || 'Login failed');
     }
-    
+
     const data = await response.json();
     setToken(data.access_token);
     setUser({
@@ -63,7 +63,7 @@ async function apiLogin(email, password) {
         role: data.role,
         full_name: data.full_name
     });
-    
+
     return data;
 }
 
@@ -80,12 +80,12 @@ async function apiRegister(email, password, fullName) {
             full_name: fullName
         })
     });
-    
+
     if (!response.ok) {
         const error = await response.json();
         throw new Error(error.detail || 'Registration failed');
     }
-    
+
     const data = await response.json();
     setToken(data.access_token);
     setUser({
@@ -94,7 +94,7 @@ async function apiRegister(email, password, fullName) {
         role: 'Student',
         full_name: fullName
     });
-    
+
     return data;
 }
 
@@ -109,11 +109,11 @@ async function apiGetMe() {
             'Authorization': `Bearer ${getToken()}`
         }
     });
-    
+
     if (!response.ok) {
         throw new Error('Invalid session');
     }
-    
+
     return await response.json();
 }
 
@@ -129,12 +129,12 @@ async function apiStartTest() {
             'Content-Type': 'application/json'
         }
     });
-    
+
     if (!response.ok) {
         const error = await response.json();
         throw new Error(error.detail || 'Test could not be started');
     }
-    
+
     const data = await response.json();
     localStorage.setItem('current_session', JSON.stringify(data));
     return data;
@@ -153,12 +153,12 @@ async function apiStartModule(sessionId, moduleName, cefrLevel = 'B1') {
             cefr_level: cefrLevel
         })
     });
-    
+
     if (!response.ok) {
         const error = await response.json();
         throw new Error(error.detail || 'Module could not be started');
     }
-    
+
     return await response.json();
 }
 
@@ -168,7 +168,7 @@ async function apiSubmitModule(sessionId, moduleName, data) {
         module_name: moduleName,
         ...data
     };
-    
+
     const response = await fetch(`${API_BASE_URL}/test/module/submit`, {
         method: 'POST',
         headers: {
@@ -177,12 +177,12 @@ async function apiSubmitModule(sessionId, moduleName, data) {
         },
         body: JSON.stringify(body)
     });
-    
+
     if (!response.ok) {
         const error = await response.json();
         throw new Error(error.detail || 'Answers could not be submitted');
     }
-    
+
     return await response.json();
 }
 
@@ -192,11 +192,11 @@ async function apiGetProgress(sessionId) {
             'Authorization': `Bearer ${getToken()}`
         }
     });
-    
+
     if (!response.ok) {
         throw new Error('Progress could not be retrieved');
     }
-    
+
     return await response.json();
 }
 
@@ -206,11 +206,11 @@ async function apiGetResult(sessionId) {
             'Authorization': `Bearer ${getToken()}`
         }
     });
-    
+
     if (!response.ok) {
         throw new Error('Result could not be retrieved');
     }
-    
+
     return await response.json();
 }
 
@@ -244,13 +244,13 @@ async function apiAdminGetStats() {
             'Content-Type': 'application/json'
         }
     });
-    
+
     if (!response.ok) {
         // Eğer yetkisiz ise (403) veya hata varsa fırlat
         if (response.status === 403) throw new Error("Unauthorized");
         throw new Error('Stats could not be retrieved');
     }
-    
+
     return await response.json();
 }
 
@@ -262,12 +262,12 @@ async function apiAdminGetUsers() {
             'Content-Type': 'application/json'
         }
     });
-    
+
     if (!response.ok) {
         if (response.status === 403) throw new Error("Unauthorized");
         throw new Error('Users could not be retrieved');
     }
-    
+
     return await response.json();
 }
 
@@ -296,13 +296,13 @@ async function apiAdminUpdateConfig(configData) {
         },
         body: JSON.stringify(configData)
     });
-    
+
     if (!response.ok) {
         const error = await response.json();
         // Use the dynamic detail message from our backend
         throw new Error(error.detail || 'Configuration update failed');
     }
-    
+
     return await response.json();
 }
 
@@ -318,12 +318,12 @@ async function apiAdminGetConfig() {
             'Content-Type': 'application/json'
         }
     });
-    
+
     if (!response.ok) {
         if (response.status === 403) throw new Error("Unauthorized Access ");
         throw new Error('Configuration could not be retrieved');
     }
-    
+
     return await response.json();
 }
 /**
@@ -338,12 +338,12 @@ async function apiAdminToggleStatus(userId) {
             'Content-Type': 'application/json'
         }
     });
-    
+
     if (!response.ok) {
         const error = await response.json();
         throw new Error(error.detail || 'User status update failed');
     }
-    
+
     return await response.json();
 }
 
@@ -362,6 +362,48 @@ async function apiAdminGetReports() {
     if (!response.ok) {
         if (response.status === 403) throw new Error("Unauthorized Access");
         throw new Error('Reports could not be retrieved');
+    }
+
+    return await response.json();
+}
+
+/**
+ * FR8: Create new user
+ */
+async function apiAdminCreateUser(userData) {
+    const response = await fetch(`${API_BASE_URL}/admin/users`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'User creation failed');
+    }
+
+    return await response.json();
+}
+
+/**
+ * FR8: Update existing user
+ */
+async function apiAdminUpdateUser(userId, updateData) {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'User update failed');
     }
 
     return await response.json();
@@ -386,17 +428,17 @@ function toggleUserMenu(event) {
     if (event) {
         event.stopPropagation();
     }
-    
+
     const dropdown = document.getElementById('user-menu-dropdown');
     const button = document.getElementById('user-menu-btn');
-    
+
     if (!dropdown || !button) {
         console.error('User menu elements not found');
         return;
     }
-    
+
     const isOpen = dropdown.classList.contains('show');
-    
+
     // Close all dropdowns first
     document.querySelectorAll('.user-menu-dropdown').forEach(menu => {
         menu.classList.remove('show');
@@ -404,7 +446,7 @@ function toggleUserMenu(event) {
     document.querySelectorAll('.user-menu-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    
+
     // Toggle current dropdown
     if (!isOpen) {
         dropdown.classList.add('show');
@@ -416,7 +458,7 @@ function handleLogout() {
     showConfirm(
         'Logout',
         'Are you sure you want to logout?',
-        function() {
+        function () {
             apiLogout();
         }
     );
@@ -432,7 +474,7 @@ function showModal(type, title, message, buttons) {
     const titleEl = document.getElementById('modal-title');
     const messageEl = document.getElementById('modal-message');
     const buttonsEl = document.getElementById('modal-buttons');
-    
+
     // Set icon and type
     const iconMap = {
         'info': 'fa-info-circle',
@@ -441,14 +483,14 @@ function showModal(type, title, message, buttons) {
         'error': 'fa-times-circle',
         'question': 'fa-right-from-bracket'
     };
-    
+
     iconEl.className = `fa-solid ${iconMap[type] || iconMap.info}`;
     iconEl.parentElement.className = `custom-modal-icon ${type}`;
-    
+
     // Set content
     titleEl.textContent = title;
     messageEl.textContent = message;
-    
+
     // Clear and add buttons
     buttonsEl.innerHTML = '';
     if (buttons && buttons.length > 0) {
@@ -456,7 +498,7 @@ function showModal(type, title, message, buttons) {
             const button = document.createElement('button');
             button.className = `custom-modal-btn ${btn.class || 'custom-modal-btn-primary'}`;
             button.textContent = btn.text;
-            button.onclick = function() {
+            button.onclick = function () {
                 if (btn.onclick) {
                     btn.onclick();
                 }
@@ -472,10 +514,10 @@ function showModal(type, title, message, buttons) {
         okButton.onclick = closeModal;
         buttonsEl.appendChild(okButton);
     }
-    
+
     // Show modal
     modal.classList.add('show');
-    
+
     // Prevent body scroll
     document.body.style.overflow = 'hidden';
 }
@@ -523,12 +565,12 @@ function showConfirm(title, message, onConfirm, onCancel = null) {
 
 // Close modal when clicking overlay
 if (typeof document !== 'undefined') {
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const modal = document.getElementById('custom-modal');
         if (modal) {
             const overlay = modal.querySelector('.custom-modal-overlay');
             if (overlay) {
-                overlay.addEventListener('click', function(e) {
+                overlay.addEventListener('click', function (e) {
                     if (e.target === overlay) {
                         closeModal();
                     }
@@ -541,13 +583,13 @@ if (typeof document !== 'undefined') {
 // Close dropdown when clicking outside
 if (typeof document !== 'undefined') {
     // Use a small delay to ensure this runs after button click handlers
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
         // Don't close if clicking inside the user menu container
         const container = event.target.closest('.user-menu-container');
         if (container) {
             return;
         }
-        
+
         // Close all dropdowns
         document.querySelectorAll('.user-menu-dropdown').forEach(menu => {
             menu.classList.remove('show');

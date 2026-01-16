@@ -357,8 +357,8 @@
             <div class="section-header"
                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                 <h2 style="font-size: 1.4rem;">User Oversight</h2>
-                <button class="btn-admin-primary" onclick="alert('Feature coming soon!')"><i
-                        class="fa-solid fa-user-plus"></i> Add User</button>
+                <button class="btn-admin-primary" onclick="openUserModal()"><i class="fa-solid fa-user-plus"></i> Add
+                    User</button>
             </div>
             <div class="list-topics" id="user-list-container">
                 <p style="text-align: center; color: #94a3b8;">Loading user database...</p>
@@ -478,6 +478,9 @@
                 container.innerHTML = '';
 
                 users.forEach(u => {
+                    // Skip deleted users
+                    if (u.account_status === 'Deleted') return;
+
                     const html = `
                     <div class="list-item" style="cursor: default; padding: 15px 25px; display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; border:1px solid #f1f5f9; border-radius:12px;">
                         <div style="flex: 2;">
@@ -487,7 +490,13 @@
                         <div style="flex: 1;"><span class="pill">${u.role}</span></div>
                         <div style="flex: 1;"><span class="tag ${u.account_status === 'Active' ? 't-bg-blue' : 't-bg-red'}">${u.account_status}</span></div>
                         <div style="display: flex; gap: 10px;">
-                            <button onclick="toggleStatus(${u.id})" class="btn-back" style="padding: 8px; color: ${u.account_status === 'Active' ? 'var(--red)' : 'var(--green)'}; border-color:#e2e8f0;">
+                            <button onclick='openUserModal(${u.id}, "${u.email}", "${u.full_name || ''}", "${u.role}")' class="btn-back" style="padding: 8px; border-color:#e2e8f0;" title="Edit User">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick='handleDeleteUser(${u.id}, "${u.full_name || u.email}")' class="btn-back" style="padding: 8px; color: var(--red); border-color:#e2e8f0;" title="Delete User">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                            <button onclick="toggleStatus(${u.id})" class="btn-back" style="padding: 8px; color: ${u.account_status === 'Active' ? 'var(--red)' : 'var(--green)'}; border-color:#e2e8f0;" title="${u.account_status === 'Active' ? 'Suspend' : 'Activate'}">
                                 <i class="fa-solid ${u.account_status === 'Active' ? 'fa-user-slash' : 'fa-user-check'}"></i>
                             </button>
                         </div>
@@ -625,10 +634,144 @@
             return colors[level] || '#94a3b8';
         }
 
+        // --- USER MANAGEMENT MODAL (FR8) ---
+        function openUserModal(userId = null, email = '', fullName = '', role = 'Student') {
+            const modal = document.getElementById('user-modal');
+            const title = document.getElementById('user-modal-title');
+            const userIdInput = document.getElementById('edit-user-id');
+            const passwordLabel = document.getElementById('password-label');
+            const passwordInput = document.getElementById('user-password');
+
+            if (userId) {
+                // Edit mode
+                title.textContent = 'Edit User';
+                userIdInput.value = userId;
+                document.getElementById('user-email').value = email;
+                document.getElementById('user-email').disabled = true; // Can't change email
+                document.getElementById('user-fullname').value = fullName;
+                document.getElementById('user-role').value = role;
+                passwordLabel.textContent = 'Password (leave empty to keep current)';
+                passwordInput.required = false;
+                passwordInput.value = '';
+            } else {
+                // Add mode
+                title.textContent = 'Add New User';
+                userIdInput.value = '';
+                document.getElementById('user-form').reset();
+                document.getElementById('user-email').disabled = false;
+                passwordLabel.textContent = 'Password *';
+                passwordInput.required = true;
+            }
+
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeUserModal() {
+            const modal = document.getElementById('user-modal');
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+            document.getElementById('user-form').reset();
+        }
+
+        async function handleSaveUser(event) {
+            event.preventDefault();
+
+            const userId = document.getElementById('edit-user-id').value;
+            const email = document.getElementById('user-email').value;
+            const fullName = document.getElementById('user-fullname').value;
+            const password = document.getElementById('user-password').value;
+            const role = document.getElementById('user-role').value;
+
+            try {
+                if (userId) {
+                    // Update existing user
+                    const updateData = {
+                        full_name: fullName,
+                        role: role
+                    };
+                    await apiAdminUpdateUser(userId, updateData);
+                    alert('User updated successfully!');
+                } else {
+                    // Create new user
+                    const createData = {
+                        email: email,
+                        full_name: fullName,
+                        password: password,
+                        role: role
+                    };
+                    await apiAdminCreateUser(createData);
+                    alert('User created successfully!');
+                }
+
+                closeUserModal();
+                await loadUsers();
+
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function handleDeleteUser(userId, userName) {
+            const confirmed = confirm(`Are you sure you want to delete "${userName}"? This will soft-delete the user (set status to Deleted).`);
+
+            if (confirmed) {
+                try {
+                    await apiAdminUpdateUser(userId, { account_status: 'Deleted' });
+                    await loadUsers();
+                    alert('User deleted successfully');
+                } catch (error) {
+                    alert('Delete failed: ' + error.message);
+                }
+            }
+        }
+
         function handleLogout() {
             apiLogout(); // From api.js
         }
     </script>
+
+    <!-- User Management Modal -->
+    <div id="user-modal" class="custom-modal">
+        <div class="custom-modal-overlay"></div>
+        <div class="custom-modal-content" style="max-width: 500px;">
+            <h2 id="user-modal-title" style="margin-bottom: 20px;">Add New User</h2>
+            <form id="user-form" onsubmit="handleSaveUser(event)"
+                style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="hidden" id="edit-user-id" value="">
+
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Email Address *</label>
+                    <input type="email" id="user-email" required class="admin-input">
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Full Name *</label>
+                    <input type="text" id="user-fullname" required class="admin-input">
+                </div>
+
+                <div>
+                    <label id="password-label" style="display: block; margin-bottom: 5px; font-weight: 600;">Password
+                        *</label>
+                    <input type="password" id="user-password" class="admin-input">
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Role</label>
+                    <select id="user-role" class="admin-input">
+                        <option value="Student">Student</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+                    <button type="button" onclick="closeUserModal()"
+                        class="custom-modal-btn custom-modal-btn-secondary">Cancel</button>
+                    <button type="submit" class="custom-modal-btn custom-modal-btn-primary">Save User</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 
 </html>

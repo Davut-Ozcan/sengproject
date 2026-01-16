@@ -14,6 +14,7 @@ from app.models import User
 from app.models.admin_settings import AdminSettings
 from app.routers.auth import get_current_user, CurrentUser
 from app.repositories import test_repository
+from app.core.security import hash_password
 
 
 # --- Schemas ---
@@ -120,13 +121,16 @@ async def admin_create_user(
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email address is already registered.")
 
+    # Hash password
+    hashed_password = hash_password(data.password)
+
     new_user = User(
         email=data.email,
         full_name=data.full_name,
         role=data.role,
-        account_status="Active"
+        account_status="Active",
+        password_hash=hashed_password
     )
-    new_user.set_password(data.password)
     db.add(new_user)
     await db.commit()
     return {"message": "User created successfully"}
