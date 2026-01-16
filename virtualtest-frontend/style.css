@@ -68,6 +68,16 @@ body {
     align-items: center;
 }
 
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-panel-btn {
+    padding: 8px 14px;
+}
+
 .logo-area {
     display: flex;
     align-items: center;

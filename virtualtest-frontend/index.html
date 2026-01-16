@@ -210,16 +210,22 @@
                     style="height: 40px; width: 40px; border-radius: 8px; margin-right: 10px;">
                 <span>Zenith<span class="gradient-text">AI</span></span>
             </div>
-            <div class="user-menu-container">
-                <button class="user-menu-btn" id="user-menu-btn" onclick="toggleUserMenu(event)">
-                    <i class="fa-solid fa-circle-user"></i>
-                    <span class="u-name">Student</span>
-                    <i class="fa-solid fa-chevron-down"></i>
+            <div class="nav-actions">
+                <button class="btn-back admin-panel-btn hidden" id="admin-panel-btn"
+                    onclick="window.location.href='admin.html'">
+                    <i class="fa-solid fa-shield-halved"></i> Admin Panel
                 </button>
-                <div class="user-menu-dropdown" id="user-menu-dropdown">
-                    <button class="user-menu-item" onclick="handleLogout()">
-                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                <div class="user-menu-container">
+                    <button class="user-menu-btn" id="user-menu-btn" onclick="toggleUserMenu(event)">
+                        <i class="fa-solid fa-circle-user"></i>
+                        <span class="u-name">Student</span>
+                        <i class="fa-solid fa-chevron-down"></i>
                     </button>
+                    <div class="user-menu-dropdown" id="user-menu-dropdown">
+                        <button class="user-menu-item" onclick="handleLogout()">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -358,6 +364,19 @@
                 document.querySelectorAll('.u-name').forEach(el => {
                     el.textContent = user.full_name || user.email;
                 });
+            }
+            updateAdminButton(user);
+        }
+
+        function updateAdminButton(user) {
+            const adminBtn = document.getElementById('admin-panel-btn');
+            if (!adminBtn) return;
+
+            const role = user && user.role ? String(user.role).toLowerCase() : '';
+            if (role.includes('admin')) {
+                adminBtn.classList.remove('hidden');
+            } else {
+                adminBtn.classList.add('hidden');
             }
         }
 
@@ -543,6 +562,19 @@
                 document.querySelectorAll('.u-name').forEach(el => {
                     el.textContent = user.full_name || user.email;
                 });
+            }
+            updateAdminButton(user);
+        }
+
+        function updateAdminButton(user) {
+            const adminBtn = document.getElementById('admin-panel-btn');
+            if (!adminBtn) return;
+
+            const role = user && user.role ? String(user.role).toLowerCase() : '';
+            if (role.includes('admin')) {
+                adminBtn.classList.remove('hidden');
+            } else {
+                adminBtn.classList.add('hidden');
             }
         }
 
