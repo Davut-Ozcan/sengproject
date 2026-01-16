@@ -59,14 +59,39 @@ def generate_otp() -> str:
 async def send_otp_email(email: str, otp: str):
     """Gmail SMTP üzerinden doğrulama kodu gönderir."""
     html = f"""
-    <div style="font-family: Arial; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-        <h2 style="color: #2b57ff;">ZenithAI Verification Code</h2>
-        <p>Please use the following 6-digit code to verify your account:</p>
-        <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1e293b; padding: 10px; background: #f8fafc; text-align: center;">
-            {otp}
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');</style>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Plus Jakarta Sans', Arial, sans-serif;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <img src="{logo_url}" alt="ZenithAI" style="width: 50px; height: 50px; border-radius: 12px; vertical-align: middle;">
+                <span style="font-size: 22px; font-weight: 800; color: #1e293b; margin-left: 10px; vertical-align: middle;">Zenith<span style="color: #2b57ff;">AI</span></span>
+            </div>
+            
+            <div style="background: #ffffff; border-radius: 24px; padding: 40px; box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; text-align: center;">
+                <h2 style="color: #1e293b; font-size: 24px; font-weight: 800; margin-bottom: 15px; margin-top: 0;">Verify Your Account</h2>
+                <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+                    Welcome to ZenithAI! To complete your registration and access the assessment modules, please use the code below.
+                </p>
+                
+                <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid #bae6fd; border-radius: 16px; padding: 25px; margin-bottom: 30px; letter-spacing: 8px;">
+                    <span style="font-family: monospace; font-size: 32px; font-weight: 800; color: #0284c7; display: block;">{otp}</span>
+                </div>
+                
+                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 0;">
+                    This code will expire in 10 minutes.<br>If you didn't request this, you can safely ignore this email.
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px; color: #cbd5e1; font-size: 12px; font-weight: 500;">
+                &copy; 2026 ZenithAI Assessment System
+            </div>
         </div>
-        <p style="color: #64748b; font-size: 0.9rem;">This code is valid for 10 minutes.</p>
-    </div>
+    </body>
+    </html>
     """
     message = MessageSchema(
         subject="ZenithAI - Your Email Verification Code",
@@ -146,22 +171,48 @@ except redis.ConnectionError:
     r = FakeRedis()
 
 # --- YARDIMCI FONKSİYONLAR ---
+logo_url = "http://127.0.0.1:8000/static/logo.jpeg"
 
 def generate_otp() -> str:
     """6 haneli rastgele kod üretir."""
     return str(random.randint(100000, 999999))
 
 async def send_otp_email(email: str, otp: str):
-    """Kullanıcıya mail atar."""
+    """Kayıt Doğrulama Maili (MAVI TEMA)"""
     html = f"""
-    <div style="font-family: Arial; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-        <h2 style="color: #2b57ff;">ZenithAI Verification Code</h2>
-        <p>Please use the following code to verify your account:</p>
-        <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1e293b; background: #f8fafc; padding: 10px; text-align: center;">
-            {otp}
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');</style>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Plus Jakarta Sans', Arial, sans-serif;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <img src="{logo_url}" alt="ZenithAI" style="width: 50px; height: 50px; border-radius: 12px; vertical-align: middle;">
+                <span style="font-size: 22px; font-weight: 800; color: #1e293b; margin-left: 10px; vertical-align: middle;">Zenith<span style="color: #2b57ff;">AI</span></span>
+            </div>
+            
+            <div style="background: #ffffff; border-radius: 24px; padding: 40px; box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; text-align: center;">
+                <h2 style="color: #1e293b; font-size: 24px; font-weight: 800; margin-bottom: 15px; margin-top: 0;">Verify Your Account</h2>
+                <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+                    Welcome to ZenithAI! To complete your registration and access the assessment modules, please use the code below.
+                </p>
+                
+                <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid #bae6fd; border-radius: 16px; padding: 25px; margin-bottom: 30px; letter-spacing: 8px;">
+                    <span style="font-family: monospace; font-size: 32px; font-weight: 800; color: #0284c7; display: block;">{otp}</span>
+                </div>
+                
+                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 0;">
+                    This code will expire in 10 minutes.<br>If you didn't request this, you can safely ignore this email.
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px; color: #cbd5e1; font-size: 12px; font-weight: 500;">
+                &copy; 2026 ZenithAI Assessment System
+            </div>
         </div>
-        <p>The code is valid for 10 minutes.</p>
-    </div>
+    </body>
+    </html>
     """
     message = MessageSchema(
         subject="ZenithAI Verification Code",
@@ -284,15 +335,45 @@ class ResetPasswordRequest(BaseModel):
 # --- YARDIMCI FONKSİYON (Reset İçin Mail) ---
 # --- YARDIMCI FONKSİYON (Reset İçin Mail - KIRMIZI TEMA) ---
 async def send_reset_email(email: str, otp: str):
+    """Şifre Sıfırlama Maili (KIRMIZI TEMA)"""
     html = f"""
-    <div style="font-family: Arial; padding: 20px; border: 1px solid #e11d48; border-radius: 10px;">
-        <h2 style="color: #e11d48;">Password Reset Request</h2>
-        <p>Use the code below to reset your account password:</p>
-        <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1e293b; background: #fff1f2; padding: 10px; text-align: center;">
-            {otp}
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');</style>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Plus Jakarta Sans', Arial, sans-serif;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <img src="{logo_url}" alt="ZenithAI" style="width: 50px; height: 50px; border-radius: 12px; vertical-align: middle;">
+                <span style="font-size: 22px; font-weight: 800; color: #1e293b; margin-left: 10px; vertical-align: middle;">Zenith<span style="color: #2b57ff;">AI</span></span>
+            </div>
+            
+            <div style="background: #ffffff; border-radius: 24px; padding: 40px; box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; text-align: center;">
+                <div style="width: 50px; height: 50px; background: #fff1f2; color: #e11d48; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px;">
+                    🔒
+                </div>
+                
+                <h2 style="color: #1e293b; font-size: 24px; font-weight: 800; margin-bottom: 15px; margin-top: 0;">Password Reset</h2>
+                <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+                    We received a request to reset your password. Enter the following code to proceed securely.
+                </p>
+                
+                <div style="background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); border: 1px solid #fecdd3; border-radius: 16px; padding: 25px; margin-bottom: 30px; letter-spacing: 8px;">
+                    <span style="font-family: monospace; font-size: 32px; font-weight: 800; color: #e11d48; display: block;">{otp}</span>
+                </div>
+                
+                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 0;">
+                    If you didn't ask for this, please ignore this email.<br>Your account is safe.
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px; color: #cbd5e1; font-size: 12px; font-weight: 500;">
+                &copy; 2026 ZenithAI Assessment System
+            </div>
         </div>
-        <p>If you did not request this code, please ignore this email.</p>
-    </div>
+    </body>
+    </html>
     """
     message = MessageSchema(
         subject="ZenithAI - Password Reset Code",
