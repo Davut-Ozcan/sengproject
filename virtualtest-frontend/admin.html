@@ -513,7 +513,7 @@
                 await apiAdminToggleStatus(userId); // api.js
                 await loadUsers(); // Refresh list
             } catch (error) {
-                alert("Status update failed: " + error.message);
+                showAlert('Status Update Failed', error.message, 'error');
             }
         }
 
@@ -552,9 +552,9 @@
 
             try {
                 await apiAdminUpdateConfig(configData); // api.js
-                alert("System parameters updated successfully! ");
+                showAlert('Saved', 'System parameters updated successfully!', 'success');
             } catch (error) {
-                alert("Update failed: " + error.message);
+                showAlert('Update Failed', error.message, 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save All Configs';
@@ -691,7 +691,7 @@
                         role: role
                     };
                     await apiAdminUpdateUser(userId, updateData);
-                    alert('User updated successfully!');
+                    showAlert('User Updated', 'User updated successfully!', 'success');
                 } else {
                     // Create new user
                     const createData = {
@@ -701,27 +701,30 @@
                         role: role
                     };
                     await apiAdminCreateUser(createData);
-                    alert('User created successfully!');
+                    showAlert('User Created', 'User created successfully!', 'success');
                 }
 
                 closeUserModal();
                 await loadUsers();
 
             } catch (error) {
-                alert('Error: ' + error.message);
+                showAlert('Save Failed', error.message, 'error');
             }
         }
 
         async function handleDeleteUser(userId, userName) {
-            const confirmed = confirm(`Are you sure you want to delete "${userName}"? This will soft-delete the user (set status to Deleted).`);
+            const confirmed = await showConfirm(
+                'Delete User',
+                `Are you sure you want to delete "${userName}"? This will soft-delete the user (set status to Deleted).`
+            );
 
             if (confirmed) {
                 try {
                     await apiAdminUpdateUser(userId, { account_status: 'Deleted' });
                     await loadUsers();
-                    alert('User deleted successfully');
+                    showAlert('User Deleted', 'User deleted successfully', 'success');
                 } catch (error) {
-                    alert('Delete failed: ' + error.message);
+                    showAlert('Delete Failed', error.message, 'error');
                 }
             }
         }
@@ -730,6 +733,19 @@
             apiLogout(); // From api.js
         }
     </script>
+
+    <!-- Custom Modal Component -->
+    <div id="custom-modal" class="custom-modal">
+        <div class="custom-modal-overlay"></div>
+        <div class="custom-modal-content">
+            <div class="custom-modal-icon">
+                <i id="modal-icon" class="fa-solid"></i>
+            </div>
+            <h3 class="custom-modal-title" id="modal-title"></h3>
+            <p class="custom-modal-message" id="modal-message"></p>
+            <div class="custom-modal-buttons" id="modal-buttons"></div>
+        </div>
+    </div>
 
     <!-- User Management Modal -->
     <div id="user-modal" class="custom-modal">
