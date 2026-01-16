@@ -615,7 +615,7 @@
             const user = getUser();
             if (user) {
                 const nameEl = document.querySelector('.u-name');
-                if(nameEl) nameEl.textContent = user.full_name || user.email;
+                if (nameEl) nameEl.textContent = user.full_name || user.email;
             }
         }
 
@@ -623,19 +623,19 @@
             try {
                 // Session bilgisini al
                 const session = getCurrentSession();
-                
+
                 // Session yoksa ana sayfaya at
                 if (!session) {
                     await showAlert('Session Error', 'Session not found. Redirecting...', 'warning');
                     window.location.href = 'index.html';
                     return;
                 }
-                
+
                 // Session ID'yi güvenli bir şekilde al (id veya session_id olabilir)
                 sessionId = session.id || session.session_id;
 
                 if (!sessionId) {
-                     throw new Error("Invalid Session ID");
+                    throw new Error("Invalid Session ID");
                 }
 
                 // Kullanıcıya bilgi ver (Uzun sürebilir)
@@ -644,7 +644,7 @@
                 // AI'dan içerik al
                 console.log("Initializing Reading Module, Session ID:", sessionId);
                 const response = await apiStartModule(sessionId, 'reading', 'B1');
-                
+
                 console.log("Raw data from backend:", response); // Hata ayıklama için
 
                 // --- ÖNEMLİ DÜZELTME BURADA ---
@@ -660,18 +660,23 @@
                     throw new Error("AI returned data in an unexpected format.");
                 }
 
+                // 🟢 Backend'den gelen süreyi kullan
+                if (moduleContent.time_limit) {
+                    timeLeft = moduleContent.time_limit;
+                }
+
                 // İçeriği göster
                 displayContent();
-                
+
                 // Timer'ı başlat (Sadece içerik geldikten sonra)
                 startTimer();
-                
+
                 hideLoading();
 
             } catch (error) {
                 console.error('Content loading error:', error);
                 hideLoading();
-                
+
                 // Kullanıcıya hatayı göster ve Dashboard'a yönlendir
                 await showAlert('Loading Error', 'Failed to generate content: ' + (error.message || "Unknown error"), 'error');
                 window.location.href = 'index.html';
@@ -686,7 +691,7 @@
 
             // 1. Okuma metnini güncelle
             document.getElementById('passage-title').textContent = moduleContent.title || 'Reading Passage';
-            
+
             // Metin bazen paragraf array'i olarak, bazen tek string olarak gelebilir
             let textHTML = '';
             if (Array.isArray(moduleContent.text)) {
@@ -695,10 +700,10 @@
                 textHTML = `<p>${moduleContent.text || 'No text available.'}</p>`;
             }
             document.getElementById('passage-content').innerHTML = textHTML;
-            
+
             // 2. Soruları hazırla
             questions = moduleContent.questions || [];
-            
+
             if (questions.length === 0) {
                 document.getElementById('question-area').innerHTML = "<p>No questions generated.</p>";
                 return;
@@ -715,7 +720,7 @@
 
         function createQuestionNav() {
             const nav = document.getElementById('question-nav');
-            if(!nav) return;
+            if (!nav) return;
             nav.innerHTML = '';
 
             questions.forEach((q, index) => {
@@ -742,16 +747,16 @@
             optionsList.innerHTML = '';
 
             const letters = ['A', 'B', 'C', 'D'];
-            
+
             // Seçenekler bazen obje bazen string array olabilir, kontrol et
             let options = question.options;
-            if(!options && question.choices) options = question.choices; // Bazı AI'lar 'choices' der
+            if (!options && question.choices) options = question.choices; // Bazı AI'lar 'choices' der
 
             if (options) {
                 options.forEach((option, optIndex) => {
                     const div = document.createElement('div');
                     div.className = 'option-item' + (userAnswers[index] === optIndex ? ' selected' : '');
-                    
+
                     // Seçenek içeriği (eğer obje ise .text özelliğini al)
                     const optionText = typeof option === 'object' ? option.text : option;
 
@@ -767,7 +772,7 @@
             // Progress bar güncelle
             const progress = ((index + 1) / questions.length) * 100;
             const fill = document.getElementById('progress-fill');
-            if(fill) fill.style.width = `${progress}%`;
+            if (fill) fill.style.width = `${progress}%`;
 
             // Navigasyon noktalarını güncelle
             document.querySelectorAll('.q-dot').forEach((dot, i) => {
@@ -781,14 +786,14 @@
             const nextBtn = document.getElementById('btn-next');
             const submitBtn = document.getElementById('btn-submit');
 
-            if(prevBtn) prevBtn.disabled = index === 0;
+            if (prevBtn) prevBtn.disabled = index === 0;
 
             if (index === questions.length - 1) {
-                if(nextBtn) nextBtn.style.display = 'none';
-                if(submitBtn) submitBtn.style.display = 'flex';
+                if (nextBtn) nextBtn.style.display = 'none';
+                if (submitBtn) submitBtn.style.display = 'flex';
             } else {
-                if(nextBtn) nextBtn.style.display = 'flex';
-                if(submitBtn) submitBtn.style.display = 'none';
+                if (nextBtn) nextBtn.style.display = 'flex';
+                if (submitBtn) submitBtn.style.display = 'none';
             }
         }
 
@@ -802,7 +807,7 @@
 
             // Nav dot'u güncelle
             const dots = document.querySelectorAll('.q-dot');
-            if(dots[currentQuestionIndex]) dots[currentQuestionIndex].classList.add('answered');
+            if (dots[currentQuestionIndex]) dots[currentQuestionIndex].classList.add('answered');
         }
 
         function goToQuestion(index) {
@@ -839,7 +844,7 @@
                     // Eğer backend harf bekliyorsa dönüşüm gerekebilir.
                     return q.correct_answer !== undefined ? q.correct_answer : q.answer;
                 });
-                
+
                 const weights = questions.map(q => q.weight || (100 / questions.length));
 
                 const result = await apiSubmitModule(sessionId, 'reading', {
@@ -894,16 +899,16 @@
         }
 
         function startTimer() {
-            if(timerInterval) clearInterval(timerInterval);
-            
+            if (timerInterval) clearInterval(timerInterval);
+
             timerInterval = setInterval(() => {
                 timeLeft--;
 
                 const minutes = Math.floor(timeLeft / 60);
                 const seconds = timeLeft % 60;
                 const timerEl = document.getElementById('timer');
-                if(timerEl) {
-                     timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                if (timerEl) {
+                    timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 }
 
                 if (timeLeft <= 0) {
@@ -919,7 +924,7 @@
             if (loadingEl) {
                 loadingEl.classList.remove('hidden');
                 const txt = loadingEl.querySelector('.loading-text');
-                if(txt) txt.textContent = text;
+                if (txt) txt.textContent = text;
             }
         }
 

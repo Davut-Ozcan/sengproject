@@ -133,7 +133,7 @@ async def admin_update_user(
 @router.get("/config")
 async def get_test_config(current_user: CurrentUser, db: Annotated[AsyncSession, Depends(get_db)]):
     check_admin_privileges(current_user)
-    result = await db.execute(select(AdminSettings).where(AdminSettings.is_active == True))
+    result = await db.execute(select(AdminSettings).where(AdminSettings.is_active == 1))
     config = result.scalar_one_or_none()
     
     if not config:
@@ -147,20 +147,37 @@ async def get_test_config(current_user: CurrentUser, db: Annotated[AsyncSession,
         }
     return config
 
-# 6. CONFIG UPDATE
+# 6. CONFIG UPDATE (Artık hem günceller hem oluşturur)
 @router.put("/config")
-async def update_test_config(data: ConfigUpdateSchema, current_user: CurrentUser, db: Annotated[AsyncSession, Depends(get_db)]):
+async def update_test_config(data: ConfigUpdateSchema, current_user: CurrentUser,
+                             db: Annotated[AsyncSession, Depends(get_db)]):
     check_admin_privileges(current_user)
-    result = await db.execute(select(AdminSettings).where(AdminSettings.is_active == True))
+
+    # 🟢 DÜZELTME: True yerine 1 yaz
+    result = await db.execute(select(AdminSettings).where(AdminSettings.is_active == 1))
     config = result.scalar_one_or_none()
-    
+
     if config:
+        # Varsa Güncelle
         config.reading_time_limit = data.reading_time_limit
         config.listening_time_limit = data.listening_time_limit
         config.writing_time_limit = data.writing_time_limit
         config.speaking_time_limit = data.speaking_time_limit
         config.ai_generation_settings = {"difficulty": data.difficulty}
+
         await db.commit()
         return {"message": "System parameters updated successfully"}
-    
-    raise HTTPException(status_code=404, detail="Configuration record not found.")
+
+    else:
+        # Yoksa Oluştur (Burası da önemli)
+        new_config = AdminSettings(
+            reading_time_limit=data.reading_time_limit,
+            listening_time_limit=data.listening_time_limit,
+            writing_time_limit=data.writing_time_limit,
+            speaking_time_limit=data.speaking_time_limit,
+            ai_generation_settings={"difficulty": data.difficulty},
+            is_active=1  # 🟢 Buraya da 1 yazıyoruz
+        )
+        db.add(new_config)
+        await db.commit()
+        return {"message": "System parameters initialized"}

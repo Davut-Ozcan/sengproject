@@ -29,6 +29,7 @@ import json
 # Projemizin modülleri
 from app.core.database import get_db
 from app.models import User, TestSession, ModuleScore
+from app.models.admin_settings import AdminSettings
 
 # Schemas
 from app.schemas.test import (
@@ -305,6 +306,29 @@ async def start_module(
     # CEFR seviyesi
     cefr_level = data.cefr_level or "B1"
 
+    # 🟢 YENİ EKLENEN KISIM: Veritabanından Süre Ayarlarını Çek
+    # Satır 310'dan sonra debug log ekleyin:
+    config_result = await db.execute(select(AdminSettings).where(AdminSettings.is_active == 1))
+    config = config_result.scalar_one_or_none()
+
+    print(f"🔍 Config bulundu mu? {config is not None}")
+    if config:
+        print(f"✅ Writing süresi: {config.writing_time_limit}")
+    print(f"📝 Modül adı: '{module_name}'")
+
+    # Varsayılan süreler (Veritabanı boşsa veya hata olursa devreye girer)
+    time_limit = 1200  # 20 dakika
+
+    if config:
+        if module_name == "reading":
+            time_limit = config.reading_time_limit
+        elif module_name == "listening":
+            time_limit = config.listening_time_limit
+        elif module_name == "writing":
+            time_limit = config.writing_time_limit
+        elif module_name == "speaking":
+            time_limit = config.speaking_time_limit
+
     # AI'dan içerik üret
     level_string = f"{cefr_level}-{module_name.capitalize()}"
     content = await ai_service.generate_content(level_string)
@@ -312,8 +336,11 @@ async def start_module(
     if not content:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to generate content."
+            detail="İçerik üretilemedi"
         )
+
+    # 🟢 SÜREYİ İÇERİĞE EKLE (Frontend bunu okuyup sayacı kuracak)
+    content["time_limit"] = time_limit
 
     # Listening için ses dosyası oluştur
     if module_name == "listening" and content.get("script"):
