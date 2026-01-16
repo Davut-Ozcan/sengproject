@@ -5,13 +5,17 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-from typing import List, Annotated, Optional # Optional eklendi
+from typing import List, Annotated, Optional
 from pydantic import BaseModel, EmailStr
+from datetime import datetime
 
 from app.core.database import get_db
 from app.models import User
-from app.models.admin_settings import AdminSettings 
+from app.models.admin_settings import AdminSettings
 from app.routers.auth import get_current_user, CurrentUser
+from app.repositories import test_repository
+from app.core.security import hash_password
+
 
 # --- Schemas ---
 
@@ -21,12 +25,14 @@ class AdminStatsResponse(BaseModel):
     active_users: int
     ai_status: str
 
+
 class ConfigUpdateSchema(BaseModel):
     reading_time_limit: int
     listening_time_limit: int
     writing_time_limit: int
     speaking_time_limit: int
-    difficulty: str 
+    difficulty: str
+
 
 class AdminUserListResponse(BaseModel):
     id: int
@@ -35,6 +41,7 @@ class AdminUserListResponse(BaseModel):
     role: str
     account_status: str
 
+
 class UserCreateSchema(BaseModel):
     """FR8: Yeni kullanıcı ekleme şeması"""
     email: EmailStr
@@ -42,16 +49,31 @@ class UserCreateSchema(BaseModel):
     full_name: str
     role: str = "Student"
 
+
 class UserUpdateSchema(BaseModel):
     """Admin'in kullanıcıyı düzenleme şeması"""
     full_name: Optional[str] = None
     role: Optional[str] = None
     account_status: Optional[str] = None
 
+
+class StudentReportResponse(BaseModel):
+    """FR51: Student Reports Response Schema"""
+    student_id: int
+    student_name: str
+    student_email: str
+    total_tests: int
+    completed_tests: int
+    average_score: Optional[float] = None
+    latest_cefr: Optional[str] = None
+    last_test_date: Optional[datetime] = None
+
+
 router = APIRouter(
     prefix="/admin",
     tags=["Admin Dashboard"],
 )
+
 
 # --- Authorization ---
 
@@ -61,6 +83,7 @@ def check_admin_privileges(user: User):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required."
         )
+
 
 # --- Endpoints ---
 
@@ -77,6 +100,7 @@ async def get_admin_stats(current_user: CurrentUser, db: Annotated[AsyncSession,
         "ai_status": "Active"
     }
 
+
 # 2. LIST USERS (FR8)
 @router.get("/users", response_model=List[AdminUserListResponse])
 async def get_all_users(current_user: CurrentUser, db: Annotated[AsyncSession, Depends(get_db)]):
@@ -84,62 +108,68 @@ async def get_all_users(current_user: CurrentUser, db: Annotated[AsyncSession, D
     result = await db.execute(select(User).order_by(User.id.desc()))
     return result.scalars().all()
 
+
 # 3. CREATE USER (FR8 - Add User Butonu İçin)
 @router.post("/users", status_code=status.HTTP_201_CREATED)
 async def admin_create_user(
-    data: UserCreateSchema,
-    current_user: CurrentUser,
-    db: Annotated[AsyncSession, Depends(get_db)]
+        data: UserCreateSchema,
+        current_user: CurrentUser,
+        db: Annotated[AsyncSession, Depends(get_db)]
 ):
     check_admin_privileges(current_user)
     existing = await db.execute(select(User).where(User.email == data.email))
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email address is already registered.")
-    
+
+    # Hash password
+    hashed_password = hash_password(data.password)
+
     new_user = User(
         email=data.email,
         full_name=data.full_name,
         role=data.role,
-        account_status="Active"
+        account_status="Active",
+        password_hash=hashed_password
     )
-    new_user.set_password(data.password) 
     db.add(new_user)
     await db.commit()
     return {"message": "User created successfully"}
 
+
 # 4. UPDATE USER (Ad, Rol ve Durum Düzenleme)
 @router.put("/users/{user_id}")
 async def admin_update_user(
-    user_id: int,
-    data: UserUpdateSchema,
-    current_user: CurrentUser,
-    db: Annotated[AsyncSession, Depends(get_db)]
+        user_id: int,
+        data: UserUpdateSchema,
+        current_user: CurrentUser,
+        db: Annotated[AsyncSession, Depends(get_db)]
 ):
     check_admin_privileges(current_user)
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
-    
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     if data.full_name is not None: user.full_name = data.full_name
     if data.role is not None: user.role = data.role
     if data.account_status is not None: user.account_status = data.account_status
-    
+
     await db.commit()
     return {"message": "User updated successfully"}
+
 
 # 5. CONFIG FETCH (FR48, FR50 - 500 Hatasını Önleyen Versiyon)
 @router.get("/config")
 async def get_test_config(current_user: CurrentUser, db: Annotated[AsyncSession, Depends(get_db)]):
     check_admin_privileges(current_user)
-    result = await db.execute(select(AdminSettings).where(AdminSettings.is_active == True))
+    result = await db.execute(select(AdminSettings).where(AdminSettings.is_active == 1))
     config = result.scalar_one_or_none()
-    
+
     if not config:
         # Eğer tabloda ayar yoksa çökme, varsayılanları dön
         return {
-            "reading_time_limit": 1200, 
+            "reading_time_limit": 1200,
             "listening_time_limit": 840,
             "writing_time_limit": 2400,
             "speaking_time_limit": 180,
@@ -147,20 +177,90 @@ async def get_test_config(current_user: CurrentUser, db: Annotated[AsyncSession,
         }
     return config
 
-# 6. CONFIG UPDATE
+
+# 6. CONFIG UPDATE (Artık hem günceller hem oluşturur)
 @router.put("/config")
-async def update_test_config(data: ConfigUpdateSchema, current_user: CurrentUser, db: Annotated[AsyncSession, Depends(get_db)]):
+async def update_test_config(data: ConfigUpdateSchema, current_user: CurrentUser,
+                             db: Annotated[AsyncSession, Depends(get_db)]):
     check_admin_privileges(current_user)
-    result = await db.execute(select(AdminSettings).where(AdminSettings.is_active == True))
+
+    # 🟢 DÜZELTME: True yerine 1 yaz
+    result = await db.execute(select(AdminSettings).where(AdminSettings.is_active == 1))
     config = result.scalar_one_or_none()
-    
+
     if config:
+        # Varsa Güncelle
         config.reading_time_limit = data.reading_time_limit
         config.listening_time_limit = data.listening_time_limit
         config.writing_time_limit = data.writing_time_limit
         config.speaking_time_limit = data.speaking_time_limit
         config.ai_generation_settings = {"difficulty": data.difficulty}
+
         await db.commit()
         return {"message": "System parameters updated successfully"}
-    
-    raise HTTPException(status_code=404, detail="Configuration record not found.")
+
+    else:
+        # Yoksa Oluştur (Burası da önemli)
+        new_config = AdminSettings(
+            reading_time_limit=data.reading_time_limit,
+            listening_time_limit=data.listening_time_limit,
+            writing_time_limit=data.writing_time_limit,
+            speaking_time_limit=data.speaking_time_limit,
+            ai_generation_settings={"difficulty": data.difficulty},
+            is_active=1  # 🟢 Buraya da 1 yazıyoruz
+        )
+        db.add(new_config)
+        await db.commit()
+        return {"message": "System parameters initialized"}
+
+
+# 7. STUDENT REPORTS (FR51)
+@router.get("/reports", response_model=List[StudentReportResponse])
+async def get_student_reports(
+        current_user: CurrentUser,
+        db: Annotated[AsyncSession, Depends(get_db)]
+):
+    """Returns comprehensive report of all students with test statistics"""
+    check_admin_privileges(current_user)
+
+    # Get all students
+    users_result = await db.execute(
+        select(User).where(User.role == "Student").order_by(User.full_name)
+    )
+    students = users_result.scalars().all()
+
+    reports = []
+    for student in students:
+        # Get test history
+        sessions = await test_repository.get_student_history(db, student.id, limit=100)
+
+        completed_sessions = [s for s in sessions if s.is_completed]
+        total_tests = len(sessions)
+        completed = len(completed_sessions)
+
+        # Calculate average score
+        avg_score = None
+        latest_cefr = None
+        last_test_date = None
+
+        if completed_sessions:
+            scores = [s.overall_score for s in completed_sessions if s.overall_score]
+            if scores:
+                avg_score = sum(scores) / len(scores)
+
+            latest = completed_sessions[0]  # Already sorted by date desc
+            latest_cefr = latest.overall_cefr_level
+            last_test_date = latest.completion_date
+
+        reports.append(StudentReportResponse(
+            student_id=student.id,
+            student_name=student.full_name or "Unknown",
+            student_email=student.email,
+            total_tests=total_tests,
+            completed_tests=completed,
+            average_score=avg_score,
+            latest_cefr=latest_cefr,
+            last_test_date=last_test_date
+        ))
+
+    return reports

@@ -399,7 +399,7 @@
             }
             updateUserDisplay();
             await loadModuleContent();
-            startTimer();
+
         });
 
         function updateUserDisplay() {
@@ -422,9 +422,14 @@
                 const response = await apiStartModule(sessionId, 'writing', 'B1');
                 moduleContent = response.content;
 
+                // 🟢 Backend'den gelen süreyi kullan
+                if (moduleContent.time_limit) {
+                    timeLeft = moduleContent.time_limit;
+                }
+
                 displayTopics();
                 hideLoading();
-
+                startTimer();
             } catch (error) {
                 console.error('Content loading error:', error);
                 await showAlert('Loading Error', 'Error loading content: ' + error.message, 'error');

@@ -372,7 +372,7 @@
             }
             updateUserDisplay();
             await loadModuleContent();
-            startTimer();
+
         });
 
         function updateUserDisplay() {
@@ -395,8 +395,14 @@
                 const response = await apiStartModule(sessionId, 'speaking', 'B1');
                 moduleContent = response.content;
 
+                // 🟢 Backend'den gelen süreyi kullan
+                if (moduleContent.time_limit) {
+                    timeLeft = moduleContent.time_limit;
+                }
+
                 displayTopics();
                 hideLoading();
+                startTimer();
 
             } catch (error) {
                 console.error('Content loading error:', error);

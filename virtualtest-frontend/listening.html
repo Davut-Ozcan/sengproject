@@ -515,6 +515,11 @@
                     throw new Error('Content is empty');
                 }
 
+                // 🟢 Backend'den gelen süreyi kullan
+                if (moduleContent.time_limit) {
+                    timeLeft = moduleContent.time_limit;
+                }
+
                 // İçeriği göster
                 displayContent();
                 hideLoading();
@@ -702,7 +707,7 @@
                 // Audio bitince submit butonu enable olmalı mı? Pagination'da bu biraz farklı.
                 // Pagination'da kullanıcı son soruya gelmeden submit çıkmıyor zaten.
                 // Ama belki audio dinlenmeden submit yapılamaz kuralı varsa burada bir state tutmak gerekebilir.
-                // Şimdilik existing logic sadece butonu enable ediyordu. 
+                // Şimdilik existing logic sadece butonu enable ediyordu.
                 // Bizim yeni logic'te btn-submit sondaki soruda çıkıyor.
             });
         }
