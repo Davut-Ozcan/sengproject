@@ -32,12 +32,17 @@ from app.schemas.auth import (
 )
 from app.schemas.user import UserResponse
 
+responses={
+    401: {"description": "Authentication error"},
+    404: {"description": "Not found"},
+}
+
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"],
     responses={
-        401: {"description": "Kimlik doğrulama hatası"},
-        404: {"description": "Bulunamadı"},
+        401: {"description": "Authentication error"},
+        404: {"description": "Not found"},
     }
 )
 
@@ -55,16 +60,16 @@ async def send_otp_email(email: str, otp: str):
     """Gmail SMTP üzerinden doğrulama kodu gönderir."""
     html = f"""
     <div style="font-family: Arial; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-        <h2 style="color: #2b57ff;">ZenithAI Doğrulama Kodu</h2>
-        <p>Hesabınızı doğrulamak için aşağıdaki 6 haneli kodu kullanabilirsiniz:</p>
+        <h2 style="color: #2b57ff;">ZenithAI Verification Code</h2>
+        <p>Please use the following 6-digit code to verify your account:</p>
         <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1e293b; padding: 10px; background: #f8fafc; text-align: center;">
             {otp}
         </div>
-        <p style="color: #64748b; font-size: 0.9rem;">Bu kod 10 dakika süreyle geçerlidir.</p>
+        <p style="color: #64748b; font-size: 0.9rem;">This code is valid for 10 minutes.</p>
     </div>
     """
     message = MessageSchema(
-        subject="ZenithAI - Email Doğrulama Kodun",
+        subject="ZenithAI - Your Email Verification Code",
         recipients=[email],
         body=html,
         subtype=MessageType.html
@@ -84,17 +89,17 @@ async def get_current_user(
     """Token'ı doğrular ve aktif kullanıcıyı döner."""
     payload = verify_token(token)
     if payload is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Geçersiz token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token.")
     
     user_id = payload.get("sub")
     result = await db.execute(select(User).where(User.id == int(user_id)))
     user = result.scalar_one_or_none()
     
     if user is None:
-        raise HTTPException(status_code=401, detail="Kullanıcı bulunamadı")
+        raise HTTPException(status_code=401, detail="User not found.")
     
     if user.account_status != "Active":
-        raise HTTPException(status_code=403, detail=f"Hesap durumu: {user.account_status}")
+        raise HTTPException(status_code=403, detail=f"Account status: {user.account_status}")
     
     return user
 
@@ -130,7 +135,7 @@ try:
     r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
     r.ping() # Bağlantı testi
 except redis.ConnectionError:
-    print("UYARI: Redis sunucusu bulunamadı! Lütfen Redis'i başlatın.")
+    print("WARNING: Redis server not found!")
     # Redis yoksa kod patlamasın diye (Geliştirme amaçlı)
     class FakeRedis:
         def __init__(self): self.store = {}
@@ -150,16 +155,16 @@ async def send_otp_email(email: str, otp: str):
     """Kullanıcıya mail atar."""
     html = f"""
     <div style="font-family: Arial; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-        <h2 style="color: #2b57ff;">ZenithAI Doğrulama Kodu</h2>
-        <p>Hesabınızı doğrulamak için aşağıdaki kodu kullanın:</p>
+        <h2 style="color: #2b57ff;">ZenithAI Verification Code</h2>
+        <p>Please use the following code to verify your account:</p>
         <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1e293b; background: #f8fafc; padding: 10px; text-align: center;">
             {otp}
         </div>
-        <p>Kod 10 dakika geçerlidir.</p>
+        <p>The code is valid for 10 minutes.</p>
     </div>
     """
     message = MessageSchema(
-        subject="ZenithAI Doğrulama Kodu",
+        subject="ZenithAI Verification Code",
         recipients=[email],
         body=html,
         subtype=MessageType.html
@@ -169,7 +174,7 @@ async def send_otp_email(email: str, otp: str):
 
 # --- ENDPOINTS ---
 
-@router.post("/request-otp", summary="1. Adım: Kod Gönder")
+@router.post("/request-otp", summary="Step 1: Send Code")
 async def request_otp(
     email: str, 
     background_tasks: BackgroundTasks, 
@@ -184,7 +189,7 @@ async def request_otp(
     # 1. Kullanıcı Kontrolü (SQL)
     existing = await db.execute(select(User).where(User.email == email))
     if existing.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Bu email zaten kayıtlı.")
+        raise HTTPException(status_code=400, detail="Email address is already registered.")
     
     # 2. OTP Üretimi
     otp_code = generate_otp()
@@ -194,15 +199,15 @@ async def request_otp(
     try:
         r.setex(name=f"otp:{email}", time=600, value=otp_code)
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Önbellek servisi hatası.")
+        raise HTTPException(status_code=500, detail="Cache service error.")
 
     # 4. Mail Gönder
     background_tasks.add_task(send_otp_email, email, otp_code)
     
-    return {"message": "Doğrulama kodu gönderildi.", "success": True}
+    return {"message": "Verification code sent.", "success": True}
 
 
-@router.post("/verify-otp", summary="2. Adım: Kodu Doğrula (Ara Geçiş)")
+@router.post("/verify-otp", summary="Step 2: Verify Code (Intermediate Step)")
 async def verify_otp(email: str, code: str):
     """
     Sadece Redis'e bakar. Kod doğru mu ve süresi dolmamış mı?
@@ -212,12 +217,12 @@ async def verify_otp(email: str, code: str):
     
     if not stored_code:
         # Kod yoksa ya hiç alınmamış ya da süresi dolup silinmiştir.
-        raise HTTPException(status_code=400, detail="Kod geçersiz veya süresi dolmuş.")
+        raise HTTPException(status_code=400, detail="Code is invalid or has expired.")
     
     if stored_code != code:
-        raise HTTPException(status_code=400, detail="Hatalı kod girdiniz.")
+        raise HTTPException(status_code=400, detail="Invalid code entered.")
         
-    return {"message": "Kod onaylandı.", "success": True}
+    return {"message": "Code verified.", "success": True}
 
 
 @router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
@@ -236,7 +241,7 @@ async def register(
     
     # Kodun süresi dolmuşsa veya eşleşmiyorsa
     if not stored_code or stored_code != data.otp_code:
-        raise HTTPException(status_code=400, detail="Doğrulama başarısız. Kod hatalı veya zaman aşımı.")
+        raise HTTPException(status_code=400, detail="Verification failed. Invalid code or timeout.")
     
     # 2. Kullanıcı Oluşturma (SQL İşlemleri)
     hashed_password = hash_password(data.password)
@@ -259,7 +264,7 @@ async def register(
     access_token = create_access_token(data={"sub": str(new_user.id), "role": new_user.role})
     
     return RegisterResponse(
-        message="Hesap başarıyla oluşturuldu.",
+        message="Account created successfully.",
         user_id=new_user.id,
         email=new_user.email,
         access_token=access_token,
@@ -281,16 +286,16 @@ class ResetPasswordRequest(BaseModel):
 async def send_reset_email(email: str, otp: str):
     html = f"""
     <div style="font-family: Arial; padding: 20px; border: 1px solid #e11d48; border-radius: 10px;">
-        <h2 style="color: #e11d48;">Şifre Sıfırlama İsteği</h2>
-        <p>Hesabınızın şifresini sıfırlamak için aşağıdaki kodu kullanın:</p>
+        <h2 style="color: #e11d48;">Password Reset Request</h2>
+        <p>Use the code below to reset your account password:</p>
         <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1e293b; background: #fff1f2; padding: 10px; text-align: center;">
             {otp}
         </div>
-        <p>Bu kodu siz istemediyseniz, lütfen dikkate almayın.</p>
+        <p>If you did not request this code, please ignore this email.</p>
     </div>
     """
     message = MessageSchema(
-        subject="ZenithAI - Şifre Sıfırlama Kodu", # Başlığı değiştirdik
+        subject="ZenithAI - Password Reset Code",
         recipients=[email],
         body=html,
         subtype=MessageType.html
@@ -301,7 +306,7 @@ async def send_reset_email(email: str, otp: str):
 # --- ŞİFRE SIFIRLAMA ENDPOINTLERİ ---
 # --- ŞİFRE SIFIRLAMA ENDPOINTLERİ (GÜNCELLENMİŞ) ---
 
-@router.post("/forgot-password", summary="Şifremi Unuttum: Kod Gönder")
+@router.post("/forgot-password", summary="Forgot Password: Send Code")
 async def forgot_password(
     data: ForgotPasswordRequest,
     background_tasks: BackgroundTasks,
@@ -310,13 +315,13 @@ async def forgot_password(
     # 1. Kullanıcı Kontrolü
     user = await db.execute(select(User).where(User.email == data.email))
     if not user.scalar_one_or_none():
-        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+        raise HTTPException(status_code=404, detail="User not found.")
 
     # 2. Kod Üret
     otp_code = generate_otp()
     
     # DEBUG: Terminale yazdıralım
-    print(f"--- DEBUG: Reset Kodu Üretildi: {otp_code} (Mail: {data.email}) ---")
+    print(f"--- DEBUG: Reset Code Generated: {otp_code} (Mail: {data.email}) ---")
 
     # 3. Redis'e Kaydet (reset: prefix'i ile)
     try:
@@ -325,46 +330,46 @@ async def forgot_password(
         
         # DEBUG: Kaydettikten sonra hemen okuyup kontrol edelim
         kontrol = r.get(f"reset:{data.email}")
-        print(f"--- DEBUG: Redis'e Yazıldı mı? Okunan Değer: {kontrol} ---")
+        print(f"--- DEBUG: Written to Redis? Read Value: {kontrol} ---")
         
     except Exception as e:
-        print(f"--- DEBUG HATASI: {e} ---")
-        raise HTTPException(status_code=500, detail="Redis hatası.")
+        print(f"--- DEBUG ERROR: {e} ---")
+        raise HTTPException(status_code=500, detail="Redis error.")
 
     # 4. Mail Gönder (Doğru fonksiyonu çağırdığından emin ol)
     background_tasks.add_task(send_reset_email, data.email, otp_code)
     
-    return {"message": "Sıfırlama kodu gönderildi.", "success": True}
+    return {"message": "Reset code sent", "success": True}
 
 
-@router.post("/reset-password", summary="Yeni Şifreyi Kaydet")
+@router.post("/reset-password", summary="Save New Password")
 async def reset_password(
     data: ResetPasswordRequest,
     db: Annotated[AsyncSession, Depends(get_db)]
 ):
     # DEBUG: Gelen veriyi görelim
-    print(f"--- DEBUG: Şifre Sıfırlama İsteği ---")
-    print(f"--- Gelen Email: {data.email}, Gelen Kod: {data.code} ---")
+    print(f"--- DEBUG: Password Reset Request ---")
+    print(f"--- Received Email: {data.email}, Received Code: {data.code} ---")
 
     # 1. Redis Kontrolü
     stored_code = r.get(f"reset:{data.email}")
-    print(f"--- DEBUG: Redis'ten Okunan Kod: {stored_code} ---")
+    print(f"--- DEBUG: Read Code from Redis: {stored_code} ---")
     
     # FakeRedis kullanıyorsan ve sunucu restart olduysa stored_code None gelir.
     if stored_code is None:
-        print("--- HATA: Kod bulunamadı (Süre dolmuş veya Server Restart olmuş) ---")
-        raise HTTPException(status_code=400, detail="Kodun süresi dolmuş veya sunucu yeniden başlatılmış. Lütfen tekrar kod isteyin.")
+        print("--- ERROR: Code not found (Expired or Server Restarted) ---")
+        raise HTTPException(status_code=400, detail="Code expired or server restarted. Please request a new code.")
 
     if stored_code != data.code:
-        print(f"--- HATA: Kod uyuşmazlığı. Beklenen: {stored_code}, Gelen: {data.code} ---")
-        raise HTTPException(status_code=400, detail="Hatalı kod girdiniz.")
+        print(f"--- ERROR: Code mismatch. Expected:: {stored_code}, Got: {data.code} ---")
+        raise HTTPException(status_code=400, detail="Invalid code entered.")
     
     # 2. Kullanıcıyı Bul ve Güncelle
     result = await db.execute(select(User).where(User.email == data.email))
     user = result.scalar_one_or_none()
     
     if not user:
-        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+        raise HTTPException(status_code=404, detail="User not found.")
         
     user.password_hash = hash_password(data.new_password)
     db.add(user)
@@ -373,8 +378,8 @@ async def reset_password(
     # Temizlik
     r.delete(f"reset:{data.email}")
     
-    print("--- BAŞARILI: Şifre güncellendi ---")
-    return {"message": "Şifreniz başarıyla güncellendi.", "success": True}
+    print("--- SUCCESS: Password updated ---")
+    return {"message": "Password updated successfully", "success": True}
 # ==========================================
 # ENDPOINT: Login, Me, Logout
 # ==========================================
@@ -389,7 +394,7 @@ async def login(
     user = result.scalar_one_or_none()
     
     if not user or not verify_password(form_data.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Geçersiz email veya şifre")
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
     
     access_token = create_access_token(data={"sub": str(user.id), "role": user.role})
     
@@ -408,4 +413,4 @@ async def get_me(current_user: CurrentUser) -> UserResponse:
 
 @router.post("/logout", response_model=MessageResponse)
 async def logout(current_user: CurrentUser) -> MessageResponse:
-    return MessageResponse(message="Çıkış başarılı", success=True)
+    return MessageResponse(message="Logout successful.", success=True)

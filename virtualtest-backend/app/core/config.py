@@ -108,10 +108,10 @@ settings = Settings()
 # Debug modunda ayarları yazdır
 if settings.DEBUG:
     print("=" * 50)
-    print("⚙️  UYGULAMA AYARLARI")
+    print("⚙️ APPLICATION SETTINGS")
     print("=" * 50)
     print(f"DATABASE_URL: {settings.DATABASE_URL[:50]}...")
     print(f"DEBUG: {settings.DEBUG}")
-    print(f"GEMINI_API_KEY: {'✅ Var' if settings.GEMINI_API_KEY else '❌ Yok'}")
+    print(f"GEMINI_API_KEY: {'✅ Set' if settings.GEMINI_API_KEY else '❌ Missing'}")
     print(f"ALLOWED_ORIGINS: {settings.ALLOWED_ORIGINS}")
     print("=" * 50)

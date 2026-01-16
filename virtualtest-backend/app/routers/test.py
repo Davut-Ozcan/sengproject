@@ -64,8 +64,8 @@ router = APIRouter(
     prefix="/test",
     tags=["Test & Assessment"],
     responses={
-        401: {"description": "Kimlik doğrulama gerekli"},
-        404: {"description": "Test bulunamadı"},
+        401: {"description": "Authentication required"},
+        404: {"description": "Test not found"},
     }
 )
 
@@ -94,8 +94,8 @@ def get_next_module(completed: List[str]) -> Optional[str]:
     "/start",
     response_model=TestSessionResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Yeni test başlat",
-    description="Öğrenci için yeni bir test oturumu oluşturur."
+    summary="Start New Test",
+    description="Creates a new test session for the student"
 )
 async def start_test(
     current_user: CurrentUser,
@@ -133,7 +133,7 @@ async def start_test(
     if not new_session:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Test oturumu oluşturulamadı"
+            detail="Failed to create test session."
         )
     
     return TestSessionResponse(
@@ -153,8 +153,8 @@ async def start_test(
 @router.get(
     "/session/{session_id}",
     response_model=TestSessionDetail,
-    summary="Test oturumu detayı",
-    description="Test oturumunun detaylı bilgilerini döndürür."
+    summary="Test Session Details",
+    description="Returns detailed information about a test session."
 )
 async def get_session(
     session_id: int,
@@ -168,14 +168,14 @@ async def get_session(
     if not session:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Test oturumu bulunamadı"
+            detail="Test session not found."
         )
     
     # Yetki kontrolü
     if session.student_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Bu teste erişim yetkiniz yok"
+            detail="You do not have permission to access this test."
         )
     
     completed = await test_repository.get_completed_modules(db, session_id)
@@ -213,8 +213,8 @@ async def get_session(
 @router.get(
     "/progress/{session_id}",
     response_model=TestProgress,
-    summary="Test ilerleme durumu",
-    description="Testin ilerleme durumunu döndürür."
+    summary="Test Progress",
+    description="Returns the progress status of the test."
 )
 async def get_progress(
     session_id: int,
@@ -269,8 +269,8 @@ async def get_progress(
 @router.post(
     "/module/start",
     response_model=ModuleStartResponse,
-    summary="Modül başlat",
-    description="Belirtilen modülü başlatır ve AI içerik üretir."
+    summary="Start Module",
+    description="Starts the specified module and generates AI content."
 )
 async def start_module(
     data: ModuleStartRequest,
@@ -289,7 +289,7 @@ async def start_module(
     if session.is_completed:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Bu test zaten tamamlanmış"
+            detail="This test is already completed."
         )
 
     # Modül zaten tamamlanmış mı?
@@ -299,7 +299,7 @@ async def start_module(
     if module_name in completed:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"{module_name.capitalize()} modülü zaten tamamlanmış"
+            detail=f"{module_name.capitalize()} module is already completed."
         )
 
     # CEFR seviyesi
@@ -312,7 +312,7 @@ async def start_module(
     if not content:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="İçerik üretilemedi"
+            detail="Failed to generate content."
         )
 
     # Listening için ses dosyası oluştur
@@ -343,8 +343,8 @@ async def start_module(
 @router.post(
     "/module/submit",
     response_model=EvaluationResponse,
-    summary="Modül cevabı gönder",
-    description="Modül cevabını gönderir ve AI değerlendirir."
+    summary="Submit Module Answer",
+    description="Submits the module answer for AI evaluation."
 )
 async def submit_module(
     data: EvaluationRequest,
@@ -446,8 +446,8 @@ async def submit_module(
 @router.post(
     "/module/speaking/upload",
     response_model=EvaluationResponse,
-    summary="Speaking ses dosyası yükle",
-    description="Speaking modülü için ses dosyası yükler ve değerlendirir."
+    summary="Upload Speaking Audio",
+    description="Uploads and evaluates the audio file for the Speaking module."
 )
 async def upload_speaking(
     session_id: int,
@@ -481,7 +481,7 @@ async def upload_speaking(
     if not audio_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Ses dosyası boş"
+            detail="Audio file is empty."
         )
     
     # Speech-to-Text
@@ -490,7 +490,7 @@ async def upload_speaking(
     if not transcript:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Ses tanınamadı. Lütfen tekrar deneyin."
+            detail="Audio could not be recognized. Please try again."
         )
     
     # AI değerlendirmesi
@@ -556,8 +556,8 @@ async def upload_speaking(
 @router.get(
     "/result/{session_id}",
     response_model=TestResult,
-    summary="Test sonucu",
-    description="Tamamlanmış testin sonucunu döndürür."
+    summary="Test Result",
+    description="Returns the result of a completed test."
 )
 async def get_result(
     session_id: int,
@@ -571,13 +571,13 @@ async def get_result(
     if not session or session.student_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Test oturumu bulunamadı"
+            detail="Test is not yet completed."
         )
     
     if not session.is_completed:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Test henüz tamamlanmamış"
+            detail="Test is not yet completed."
         )
     
     # Puanları al
@@ -600,12 +600,12 @@ async def get_result(
     
     # CEFR açıklaması
     cefr_descriptions = {
-        "A1": "Başlangıç - Temel ifadeleri anlayabilir",
-        "A2": "Temel - Basit günlük konuları anlayabilir",
-        "B1": "Orta-Alt - Ana noktaları anlayabilir",
-        "B2": "Orta-Üst - Karmaşık metinleri anlayabilir",
-        "C1": "İleri - Geniş kapsamlı metinleri anlayabilir",
-        "C2": "Ustalaşmış - Her şeyi kolayca anlayabilir"
+        "A1": "Beginner - Can understand basic expressions",
+        "A2": "Elementary - Can understand simple daily topics",
+        "B1": "Intermediate-Low - Can understand main points",
+        "B2": "Intermediate-High - Can understand complex texts",
+        "C1": "Advanced - Can understand wide-ranging texts",
+        "C2": "Proficient - Can easily understand everything"
     }
     
     return TestResult(
@@ -628,8 +628,8 @@ async def get_result(
 @router.get(
     "/history",
     response_model=List[TestSessionResponse],
-    summary="Test geçmişi",
-    description="Kullanıcının tüm test geçmişini döndürür."
+    summary="Test History",
+    description="Returns the complete test history of the user."
 )
 async def get_history(
     current_user: CurrentUser,

@@ -86,9 +86,9 @@ class UserCreate(UserBase):
     # max_length=100: Maksimum 100 karakter
     password: str = Field(
         ...,  # Zorunlu
-        min_length=6,
+        min_length=8,
         max_length=100,
-        description="Kullanıcı şifresi (min 6 karakter)"
+        description="User password (min 8 chars)"
     )
     
     # Tam ad (opsiyonel)
@@ -96,7 +96,7 @@ class UserCreate(UserBase):
     full_name: Optional[str] = Field(
         None,
         max_length=100,
-        description="Kullanıcının tam adı"
+        description="User's full name"
     )
 
 
@@ -219,7 +219,7 @@ class UserStatusUpdate(BaseModel):
     # Sadece belirli değerler kabul edilir
     account_status: str = Field(
         ...,
-        description="Hesap durumu: Pending, Active, Suspended, Deleted"
+        description="Account status: Pending, Active, Suspended, Deleted"
     )
 
 
@@ -235,5 +235,5 @@ class UserRoleUpdate(BaseModel):
     
     role: str = Field(
         ...,
-        description="Kullanıcı rolü: Student, Admin"
+        description="User role: Student, Admin"
     )

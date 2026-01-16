@@ -94,7 +94,7 @@ async def admin_create_user(
     check_admin_privileges(current_user)
     existing = await db.execute(select(User).where(User.email == data.email))
     if existing.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="Email address is already registered.")
     
     new_user = User(
         email=data.email,
@@ -163,4 +163,4 @@ async def update_test_config(data: ConfigUpdateSchema, current_user: CurrentUser
         await db.commit()
         return {"message": "System parameters updated successfully"}
     
-    raise HTTPException(status_code=404, detail="Settings record not found. Run SQL first.")
+    raise HTTPException(status_code=404, detail="Configuration record not found.")

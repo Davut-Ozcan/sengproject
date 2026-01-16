@@ -194,7 +194,7 @@ class ReadingSubmission(BaseModel):
     # Cevaplar listesi
     answers: List[Dict[str, Any]] = Field(
         ...,
-        description="Soru cevapları: [{'question_id': 1, 'answer': 'B'}, ...]"
+        description="Question answers: [{'question_id': 1, 'answer': 'B'}, ...]"
     )
     
     # Modülü tamamlama süresi (saniye)
@@ -269,7 +269,7 @@ class WritingSubmission(BaseModel):
         ...,
         min_length=50,  # Minimum 50 karakter
         max_length=5000,  # Maksimum 5000 karakter
-        description="Essay metni (250-400 kelime önerilen)"
+        description="Essay text (250-400 words recommended)"
     )
     
     # Yazma süresi
