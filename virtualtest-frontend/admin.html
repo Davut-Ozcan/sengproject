@@ -496,9 +496,6 @@
                             <button onclick='handleDeleteUser(${u.id}, "${u.full_name || u.email}")' class="btn-back" style="padding: 8px; color: var(--red); border-color:#e2e8f0;" title="Delete User">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
-                            <button onclick="toggleStatus(${u.id})" class="btn-back" style="padding: 8px; color: ${u.account_status === 'Active' ? 'var(--red)' : 'var(--green)'}; border-color:#e2e8f0;" title="${u.account_status === 'Active' ? 'Suspend' : 'Activate'}">
-                                <i class="fa-solid ${u.account_status === 'Active' ? 'fa-user-slash' : 'fa-user-check'}"></i>
-                            </button>
                         </div>
                     </div>`;
                     container.innerHTML += html;
