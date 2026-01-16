@@ -113,7 +113,7 @@ class TestResultRepository:
                 module_name=module.lower(),
                 score=score,
                 cefr_level=cefr_level,
-                completed_at=datetime.utcnow()
+                #completed_at=datetime.utcnow()
             )
             
             db.add(new_score)
@@ -187,7 +187,7 @@ class TestResultRepository:
                 result_dict[score.module_name] = {
                     "score": score.score,
                     "cefr": score.cefr_level,
-                    "completed_at": score.completed_at.isoformat() if score.completed_at else None
+                    #"completed_at": score.completed_at.isoformat() if score.completed_at else None
                 }
             
             return result_dict
