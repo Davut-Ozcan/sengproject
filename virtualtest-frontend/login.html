@@ -393,6 +393,8 @@
     const BASE_URL = "http://127.0.0.1:8000/api"; 
     let currentRole = 'student';
 
+    let registrationData = { email: "", otp: "" };
+
     function showError(msg) {
         const box = document.getElementById('error-box');
         box.textContent = msg; box.classList.add('show');
@@ -435,49 +437,96 @@
         }
     }
 
-    // --- REGISTER SİSTEMİ (HATASIZ HALİ) ---
+   // --- REGISTER ADIM 1: KOD GÖNDER ---
     async function sendOtpStep() {
         const emailInput = document.getElementById('register-email').value;
+        const btn = document.querySelector('#reg-step-1 button');
+
         if (!emailInput.includes('@')) return showError("Valid email required.");
+
+        btn.disabled = true; btn.innerHTML = 'Sending...';
+
         try {
-            const res = await fetch(`${BASE_URL}/auth/request-otp?email=${emailInput}`, { method: 'POST' });
+            const res = await fetch(`${BASE_URL}/auth/request-otp?email=${encodeURIComponent(emailInput)}`, { method: 'POST' });
+            
             if (res.ok) {
+                registrationData.email = emailInput;
                 document.getElementById('reg-step-1').style.display = 'none';
                 document.getElementById('reg-step-2').style.display = 'block';
-            } else { const err = await res.json(); showError(err.detail); }
-        } catch (e) { showError("Server connection failed."); }
+            } else { 
+                const err = await res.json(); 
+                showError(err.detail); 
+            }
+        } catch (e) { 
+            showError("Server connection failed."); 
+        } finally {
+            btn.disabled = false; btn.innerHTML = 'Send Verification Code <i class="fa-solid fa-paper-plane"></i>';
+        }
     }
 
+    // --- REGISTER ADIM 2: KODU DOĞRULA ---
     async function verifyCodeStep() {
-        const otpVal = document.getElementById('register-otp').value; // otpVal ismiyle çakışmayı önledik
-        const emailVal = document.getElementById('register-email').value;
+        const otpVal = document.getElementById('register-otp').value;
+        const btn = document.querySelector('#reg-step-2 button');
+
         if (otpVal.length !== 6) return showError("Enter 6-digit code.");
+
+        btn.disabled = true; btn.innerHTML = 'Verifying...';
+
         try {
-            const res = await fetch(`${BASE_URL}/auth/verify-otp?email=${emailVal}&code=${otpVal}`, { method: 'POST' });
+            const res = await fetch(`${BASE_URL}/auth/verify-otp?email=${encodeURIComponent(registrationData.email)}&code=${otpVal}`, { method: 'POST' });
+            
             if (res.ok) {
+                registrationData.otp = otpVal;
                 document.getElementById('reg-step-2').style.display = 'none';
                 document.getElementById('reg-step-3').style.display = 'block';
-            } else { showError("Invalid code."); }
-        } catch (e) { showError("Verification error."); }
+            } else { 
+                showError("Invalid or expired code."); 
+            }
+        } catch (e) { 
+            showError("Verification error."); 
+        } finally {
+            btn.disabled = false; btn.innerHTML = 'Verify Code <i class="fa-solid fa-check-double"></i>';
+        }
     }
 
+    // --- REGISTER ADIM 3: KAYIT OL ---
     async function handleRegister(e) {
         e.preventDefault();
-        const otpFinal = document.getElementById('register-otp').value;
+        const btn = document.getElementById('register-btn');
+        
+        const pass1 = document.getElementById('register-password').value;
+        const pass2 = document.getElementById('register-password-confirm').value;
+        if(pass1 !== pass2) return showError("Passwords do not match!");
+
+        btn.disabled = true; btn.innerHTML = 'Creating Account...';
+
         const payload = {
-            email: document.getElementById('register-email').value,
+            email: registrationData.email,
+            otp_code: registrationData.otp,
             full_name: document.getElementById('register-name').value,
-            password: document.getElementById('register-password').value
+            password: pass1
         };
+
         try {
-            const res = await fetch(`${BASE_URL}/auth/register?otp_code=${otpFinal}`, {
+            const res = await fetch(`${BASE_URL}/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            if (res.ok) { alert("Created!"); location.reload(); }
-            else { const err = await res.json(); showError(err.detail); }
-        } catch (e) { showError("Final error."); }
+
+            if (res.ok) {
+                alert("Account Created Successfully!");
+                location.reload(); 
+            } else { 
+                const err = await res.json(); 
+                showError(err.detail); 
+            }
+        } catch (e) { 
+            showError("Final registration error."); 
+        } finally {
+            btn.disabled = false; btn.innerHTML = 'Create Account <i class="fa-solid fa-user-plus"></i>';
+        }
     }
 </script>
 </body>
