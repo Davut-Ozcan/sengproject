@@ -347,6 +347,26 @@ async function apiAdminToggleStatus(userId) {
     return await response.json();
 }
 
+/**
+ * FR51: Get student reports with test statistics
+ */
+async function apiAdminGetReports() {
+    const response = await fetch(`${API_BASE_URL}/admin/reports`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    if (!response.ok) {
+        if (response.status === 403) throw new Error("Unauthorized Access");
+        throw new Error('Reports could not be retrieved');
+    }
+
+    return await response.json();
+}
+
 function updateUserUI() {
     const user = getUser();
     if (user) {
