@@ -322,6 +322,10 @@
                 Login <i class="fa-solid fa-arrow-right-to-bracket"></i>
             </button>
 
+            <div style="text-align: right; margin-top: 10px; margin-bottom: 20px;">
+    <span class="link-text" onclick="toggleView('forgot')" style="font-size: 0.9rem;">Forgot Password?</span>
+</div>
+
             <div class="auth-footer">
                 Don't have an account? <span class="link-text" id="reg-link-text"
                     onclick="toggleView('register')">Register as User</span>
@@ -386,6 +390,47 @@
         Already have an account? <span class="link-text" onclick="toggleView('login')">Login</span>
     </div>
 </form>
+        
+        <form id="forgot-form">
+    <h3 class="form-title">Reset Password</h3>
+    
+    <div id="forgot-step-1">
+        <div class="form-group">
+            <label>Enter your email</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-envelope"></i>
+                <input type="email" id="forgot-email" required placeholder="name@company.com">
+            </div>
+        </div>
+        <button type="button" class="btn-auth" onclick="sendForgotCode()">
+            Send Reset Code <i class="fa-solid fa-paper-plane"></i>
+        </button>
+    </div>
+
+    <div id="forgot-step-2" style="display: none;">
+        <div class="form-group">
+            <label>Verification Code</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-key"></i>
+                <input type="text" id="forgot-otp" placeholder="6-digit code" maxlength="6">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>New Password</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="forgot-pass" placeholder="New password">
+            </div>
+        </div>
+        <button type="button" class="btn-auth" onclick="handlePasswordReset()">
+            Update Password <i class="fa-solid fa-check"></i>
+        </button>
+    </div>
+
+    <div class="auth-footer">
+        Remembered? <span class="link-text" onclick="toggleView('login')">Login</span>
+    </div>
+</form>
     </div>
 
     <script src="api.js"></script>
@@ -427,13 +472,26 @@
     function toggleView(view) {
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
+        const forgotForm = document.getElementById('forgot-form');
+        
         hideError();
+        
+        // Önce hepsini gizle
+        loginForm.classList.remove('active');
+        registerForm.classList.remove('active');
+        if(forgotForm) forgotForm.classList.remove('active');
+        
+        const roleSelector = document.querySelector('.role-selector');
+
         if (view === 'login') {
-            loginForm.classList.add('active'); registerForm.classList.remove('active');
-            document.querySelector('.role-selector').style.display = 'flex';
-        } else {
-            registerForm.classList.add('active'); loginForm.classList.remove('active');
-            document.querySelector('.role-selector').style.display = 'none';
+            loginForm.classList.add('active');
+            roleSelector.style.display = 'flex';
+        } else if (view === 'register') {
+            registerForm.classList.add('active');
+            roleSelector.style.display = 'none';
+        } else if (view === 'forgot') {
+            forgotForm.classList.add('active');
+            roleSelector.style.display = 'none';
         }
     }
 
@@ -526,6 +584,78 @@
             showError("Final registration error."); 
         } finally {
             btn.disabled = false; btn.innerHTML = 'Create Account <i class="fa-solid fa-user-plus"></i>';
+        }
+    }
+
+    // --- ŞİFRE SIFIRLAMA İŞLEMLERİ ---
+    async function sendForgotCode() {
+        const emailVal = document.getElementById('forgot-email').value;
+        const btn = document.querySelector('#forgot-step-1 button');
+
+        if (!emailVal.includes('@')) return showError("Valid email required.");
+
+        btn.disabled = true; btn.innerHTML = 'Sending...';
+
+        try {
+            const res = await fetch(`${BASE_URL}/auth/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: emailVal })
+            });
+
+            if (res.ok) {
+                document.getElementById('forgot-step-1').style.display = 'none';
+                document.getElementById('forgot-step-2').style.display = 'block';
+                // Kullanıcıyı bilgilendir (Hata kutusunu yeşil kullanıyoruz şimdilik)
+                const box = document.getElementById('error-box');
+                box.style.color = "green"; box.style.background = "#dcfce7"; box.style.borderColor = "#bbf7d0";
+                showError("Code sent! Check your email.");
+            } else {
+                const err = await res.json();
+                showError(err.detail);
+            }
+        } catch (e) {
+            showError("Connection error.");
+        } finally {
+            btn.disabled = false; btn.innerHTML = 'Send Reset Code <i class="fa-solid fa-paper-plane"></i>';
+        }
+    }
+
+    async function handlePasswordReset() {
+        const emailVal = document.getElementById('forgot-email').value;
+        const otpVal = document.getElementById('forgot-otp').value;
+        const newPass = document.getElementById('forgot-pass').value;
+        const btn = document.querySelector('#forgot-step-2 button');
+
+        if (otpVal.length !== 6) return showError("Invalid code length.");
+        if (newPass.length < 6) return showError("Password too short.");
+
+        btn.disabled = true; btn.innerHTML = 'Updating...';
+
+        const payload = {
+            email: emailVal,
+            code: otpVal,
+            new_password: newPass
+        };
+
+        try {
+            const res = await fetch(`${BASE_URL}/auth/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert("Password updated successfully! Please login.");
+                location.reload(); 
+            } else {
+                const err = await res.json();
+                showError(err.detail);
+            }
+        } catch (e) {
+            showError("Update failed.");
+        } finally {
+            btn.disabled = false; btn.innerHTML = 'Update Password <i class="fa-solid fa-check"></i>';
         }
     }
 </script>

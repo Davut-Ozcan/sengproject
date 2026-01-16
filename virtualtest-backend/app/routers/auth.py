@@ -266,8 +266,115 @@ async def register(
         token_type="bearer"
     )
 
+# --- MEVCUT ŞEMALARIN ALTINA EKLE ---
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    code: str
+    new_password: str
+
+# --- YARDIMCI FONKSİYON (Reset İçin Mail) ---
+# --- YARDIMCI FONKSİYON (Reset İçin Mail - KIRMIZI TEMA) ---
+async def send_reset_email(email: str, otp: str):
+    html = f"""
+    <div style="font-family: Arial; padding: 20px; border: 1px solid #e11d48; border-radius: 10px;">
+        <h2 style="color: #e11d48;">Şifre Sıfırlama İsteği</h2>
+        <p>Hesabınızın şifresini sıfırlamak için aşağıdaki kodu kullanın:</p>
+        <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1e293b; background: #fff1f2; padding: 10px; text-align: center;">
+            {otp}
+        </div>
+        <p>Bu kodu siz istemediyseniz, lütfen dikkate almayın.</p>
+    </div>
+    """
+    message = MessageSchema(
+        subject="ZenithAI - Şifre Sıfırlama Kodu", # Başlığı değiştirdik
+        recipients=[email],
+        body=html,
+        subtype=MessageType.html
+    )
+    fm = FastMail(settings.get_mail_config())
+    await fm.send_message(message)
+
+# --- ŞİFRE SIFIRLAMA ENDPOINTLERİ ---
+# --- ŞİFRE SIFIRLAMA ENDPOINTLERİ (GÜNCELLENMİŞ) ---
+
+@router.post("/forgot-password", summary="Şifremi Unuttum: Kod Gönder")
+async def forgot_password(
+    data: ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    # 1. Kullanıcı Kontrolü
+    user = await db.execute(select(User).where(User.email == data.email))
+    if not user.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+
+    # 2. Kod Üret
+    otp_code = generate_otp()
+    
+    # DEBUG: Terminale yazdıralım
+    print(f"--- DEBUG: Reset Kodu Üretildi: {otp_code} (Mail: {data.email}) ---")
+
+    # 3. Redis'e Kaydet (reset: prefix'i ile)
+    try:
+        # Kod string olarak kaydediliyor
+        r.setex(name=f"reset:{data.email}", time=300, value=otp_code)
+        
+        # DEBUG: Kaydettikten sonra hemen okuyup kontrol edelim
+        kontrol = r.get(f"reset:{data.email}")
+        print(f"--- DEBUG: Redis'e Yazıldı mı? Okunan Değer: {kontrol} ---")
+        
+    except Exception as e:
+        print(f"--- DEBUG HATASI: {e} ---")
+        raise HTTPException(status_code=500, detail="Redis hatası.")
+
+    # 4. Mail Gönder (Doğru fonksiyonu çağırdığından emin ol)
+    background_tasks.add_task(send_reset_email, data.email, otp_code)
+    
+    return {"message": "Sıfırlama kodu gönderildi.", "success": True}
 
 
+@router.post("/reset-password", summary="Yeni Şifreyi Kaydet")
+async def reset_password(
+    data: ResetPasswordRequest,
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    # DEBUG: Gelen veriyi görelim
+    print(f"--- DEBUG: Şifre Sıfırlama İsteği ---")
+    print(f"--- Gelen Email: {data.email}, Gelen Kod: {data.code} ---")
+
+    # 1. Redis Kontrolü
+    stored_code = r.get(f"reset:{data.email}")
+    print(f"--- DEBUG: Redis'ten Okunan Kod: {stored_code} ---")
+    
+    # FakeRedis kullanıyorsan ve sunucu restart olduysa stored_code None gelir.
+    if stored_code is None:
+        print("--- HATA: Kod bulunamadı (Süre dolmuş veya Server Restart olmuş) ---")
+        raise HTTPException(status_code=400, detail="Kodun süresi dolmuş veya sunucu yeniden başlatılmış. Lütfen tekrar kod isteyin.")
+
+    if stored_code != data.code:
+        print(f"--- HATA: Kod uyuşmazlığı. Beklenen: {stored_code}, Gelen: {data.code} ---")
+        raise HTTPException(status_code=400, detail="Hatalı kod girdiniz.")
+    
+    # 2. Kullanıcıyı Bul ve Güncelle
+    result = await db.execute(select(User).where(User.email == data.email))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+        
+    user.password_hash = hash_password(data.new_password)
+    db.add(user)
+    await db.commit()
+    
+    # Temizlik
+    r.delete(f"reset:{data.email}")
+    
+    print("--- BAŞARILI: Şifre güncellendi ---")
+    return {"message": "Şifreniz başarıyla güncellendi.", "success": True}
 # ==========================================
 # ENDPOINT: Login, Me, Logout
 # ==========================================
