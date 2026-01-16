@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from typing import Annotated, Optional
 import random
+import re
 from datetime import datetime, timedelta
 
 
@@ -37,6 +38,15 @@ responses={
     404: {"description": "Not found"},
 }
 
+def validate_password_strength(password: str):
+    if len(password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters long.")
+    if not re.search(r"[a-z]", password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one lowercase letter.")
+    if not re.search(r"[A-Z]", password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one uppercase letter.")
+    if not re.search(r"\d", password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one number.")
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"],
@@ -223,11 +233,12 @@ async def send_otp_email(email: str, otp: str):
     fm = FastMail(settings.get_mail_config())
     await fm.send_message(message)
 
+    
 # --- ENDPOINTS ---
 
 @router.post("/request-otp", summary="Step 1: Send Code")
 async def request_otp(
-    email: str, 
+    email: EmailStr,
     background_tasks: BackgroundTasks, 
     db: Annotated[AsyncSession, Depends(get_db)]
 ):

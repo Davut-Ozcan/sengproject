@@ -280,6 +280,43 @@
             margin-top: 5px;
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
+
+        /* Başarı Mesajı Kutusu */
+        .success-message {
+            background: #dcfce7;
+            color: #15803d;
+            padding: 16px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            display: none; /* Başlangıçta gizli */
+            border: 1px solid #bbf7d0;
+            text-align: center;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .success-message.show {
+            display: flex; /* Gösterildiğinde flex olur */
+        }
+
+        /* Dönen Yuvarlak (Spinner) */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #bbf7d0;
+            border-top: 3px solid #15803d;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 
@@ -287,28 +324,31 @@
 
     <div class="auth-card">
         <div class="auth-header">
-            <img src="logo.jpeg" alt="ZenithAI Logo"
-                style="height: 60px; width: 60px; object-fit: cover; border-radius: 12px; margin-bottom: 10px;">
+            <a href="index.html" style="display: inline-block; cursor: pointer;">
+                <img src="logo.jpeg" alt="ZenithAI Logo"
+                    style="height: 60px; width: 60px; object-fit: cover; border-radius: 12px; margin-bottom: 10px;">
+            </a>
             <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 5px; color: #1e293b;">Zenith<span
                     style="background: linear-gradient(90deg, #2563eb, #7c3aed); -webkit-background-clip: text; background-clip: text; color: transparent;">AI</span>
             </h2>
             <p>AI Powered English Level Assessment</p>
         </div>
 
-        <h3 class="form-title">Login</h3>
+        <h3 class="form-title" id="main-title">Login</h3>
         <div class="role-selector">
             <button class="role-btn active" onclick="toggleRole('student')">User</button>
             <button class="role-btn" onclick="toggleRole('admin')">Admin</button>
         </div>
 
         <div id="error-box" class="error-message"></div>
+        
 
         <form id="login-form" class="active" onsubmit="handleLogin(event)">
             <div class="form-group">
                 <label>Email Address</label>
                 <div class="input-wrapper">
                     <i class="fa-solid fa-envelope"></i>
-                    <input type="email" id="login-email" required placeholder="hakancaglar@ankarabilim.eud.tr">
+                    <input type="email" id="login-email" required placeholder="hakancaglar@ankarabilim.edu.tr">
                 </div>
             </div>
             <div class="form-group">
@@ -338,7 +378,7 @@
             <label>Email Address</label>
             <div class="input-wrapper">
                 <i class="fa-solid fa-envelope"></i>
-                <input type="email" id="register-email" required placeholder="hakancaglar@ankarabilim.eud.tr">
+                <input type="email" id="register-email" required placeholder="hakancaglar@ankarabilim.edu.tr">
             </div>
         </div>
         <button type="button" class="btn-auth" onclick="sendOtpStep()">
@@ -351,7 +391,13 @@
             <label>Verification Code</label>
             <div class="input-wrapper">
                 <i class="fa-solid fa-key"></i>
-                <input type="text" id="register-otp" placeholder="6-digit code" maxlength="6">
+                <input type="text" 
+       id="register-otp" 
+       placeholder="6-digit code" 
+       maxlength="6" 
+       inputmode="numeric" 
+       pattern="[0-9]*"
+       oninput="this.value = this.value.replace(/[^0-9]/g, '')">
             </div>
         </div>
         <button type="button" class="btn-auth" onclick="verifyCodeStep()">
@@ -412,7 +458,13 @@
             <label>Verification Code</label>
             <div class="input-wrapper">
                 <i class="fa-solid fa-key"></i>
-                <input type="text" id="forgot-otp" placeholder=" Min 6-digit code" maxlength="6">
+                <input type="text" 
+       id="forgot-otp" 
+       placeholder="6-digit code" 
+       maxlength="6" 
+       inputmode="numeric" 
+       pattern="[0-9]*"
+       oninput="this.value = this.value.replace(/[^0-9]/g, '')">
             </div>
         </div>
         <div class="form-group">
@@ -442,9 +494,29 @@
 
     function showError(msg) {
         const box = document.getElementById('error-box');
-        box.textContent = msg; box.classList.add('show');
+        
+        // Eğer kutuda daha önceden kalma "yeşil" (başarı) stili varsa temizle
+        // Bu sayede hata mesajları her zaman kırmızı (CSS'teki varsayılan) görünür
+        if (box.style.color === 'green') {
+            box.removeAttribute('style');
+        }
+
+        box.textContent = msg; 
+        box.classList.add('show');
     }
-    function hideError() { document.getElementById('error-box').classList.remove('show'); }
+
+    function hideError() { 
+        const box = document.getElementById('error-box');
+        
+        // 1. Kutuyu gizle
+        box.classList.remove('show');
+        
+        // 2. İçindeki yazıyı temizle (Ekranda hayalet yazı kalmaması için)
+        box.textContent = ''; 
+        
+        // 3. Varsa inline stilleri (yeşil renk vb.) tamamen sil
+        box.removeAttribute('style'); 
+    }
 
     // --- LOGIN KISMI (SAĞLAM DEDİĞİN KISIM) ---
     async function handleLogin(e) {
@@ -473,6 +545,8 @@
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         const forgotForm = document.getElementById('forgot-form');
+        const mainTitle = document.getElementById('main-title');
+        const roleSelector = document.querySelector('.role-selector');
         
         hideError();
         
@@ -481,18 +555,35 @@
         registerForm.classList.remove('active');
         if(forgotForm) forgotForm.classList.remove('active');
         
-        const roleSelector = document.querySelector('.role-selector');
 
         if (view === 'login') {
             loginForm.classList.add('active');
             roleSelector.style.display = 'flex';
+            
+            // Başlığı Login yap ve göster
+            mainTitle.style.display = 'block';
+            mainTitle.textContent = 'Login'; 
+
         } else if (view === 'register') {
             registerForm.classList.add('active');
             roleSelector.style.display = 'none';
+            
+            // Başlığı Register yap ve göster
+            mainTitle.style.display = 'block';
+            mainTitle.textContent = 'Register'; 
+
         } else if (view === 'forgot') {
             forgotForm.classList.add('active');
             roleSelector.style.display = 'none';
+            
+            // Forgot formunun içinde zaten kendi başlığı var, o yüzden ana başlığı gizle
+            mainTitle.style.display = 'none'; 
         }
+    }
+
+    function validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
     }
 
    // --- REGISTER ADIM 1: KOD GÖNDER ---
@@ -500,15 +591,19 @@
         const emailInput = document.getElementById('register-email').value;
         const btn = document.querySelector('#reg-step-1 button');
 
-        if (!emailInput.includes('@')) return showError("Valid email required.");
+        if (!validateEmail(emailInput)) {
+            return showError("Please enter a valid email address (e.g. cansuyoruk@ankarabilim.edu.tr).");
+        }
 
         btn.disabled = true; btn.innerHTML = 'Sending...';
+        hideError();
 
         try {
             const res = await fetch(`${BASE_URL}/auth/request-otp?email=${encodeURIComponent(emailInput)}`, { method: 'POST' });
             
             if (res.ok) {
                 registrationData.email = emailInput;
+                hideError();
                 document.getElementById('reg-step-1').style.display = 'none';
                 document.getElementById('reg-step-2').style.display = 'block';
             } else { 
@@ -548,6 +643,14 @@
         }
     }
 
+    function showSuccess(msg) {
+    const box = document.getElementById('error-box');
+    box.style.color = "#15803d";
+    box.style.background = "#dcfce7";
+    box.style.borderColor = "#bbf7d0";
+    box.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${msg}`;
+    box.classList.add('show');
+}
     // --- REGISTER ADIM 3: KAYIT OL ---
     async function handleRegister(e) {
         e.preventDefault();
@@ -557,7 +660,14 @@
         const pass2 = document.getElementById('register-password-confirm').value;
         if(pass1 !== pass2) return showError("Passwords do not match!");
 
-        btn.disabled = true; btn.innerHTML = 'Creating Account...';
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(pass1)) {
+        return showError("Password must be at least 8 characters and include uppercase, lowercase, and a number.");
+    }
+    
+        btn.disabled = true; 
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Creating...';
+        hideError();
 
         const payload = {
             email: registrationData.email,
@@ -573,18 +683,26 @@
                 body: JSON.stringify(payload)
             });
 
+            const responseData = await res.json();
+
             if (res.ok) {
-                alert("Account Created Successfully!");
-                location.reload(); 
+                document.getElementById('register-form').style.opacity = '0.5';
+                document.getElementById('register-form').style.pointerEvents = 'none'
+                showSuccess("Account created successfully! Redirecting to login...");
+                setTimeout(() => {
+                    location.reload(); 
+                }, 3000);
             } else { 
-                const err = await res.json(); 
-                showError(err.detail); 
+                showError(responseData.detail || "Registration failed."); 
+                btn.disabled = false;
+                btn.innerHTML = 'Create Account <i class="fa-solid fa-user-plus"></i>';
             }
         } catch (e) { 
-            showError("Final registration error."); 
-        } finally {
-            btn.disabled = false; btn.innerHTML = 'Create Account <i class="fa-solid fa-user-plus"></i>';
+            showError("Server connection failed."); 
+            btn.disabled = false;
+            btn.innerHTML = 'Create Account <i class="fa-solid fa-user-plus"></i>';
         }
+        
     }
 
     // --- ŞİFRE SIFIRLAMA İŞLEMLERİ ---
@@ -592,7 +710,9 @@
         const emailVal = document.getElementById('forgot-email').value;
         const btn = document.querySelector('#forgot-step-1 button');
 
-        if (!emailVal.includes('@')) return showError("Valid email required.");
+        if (!validateEmail(emailVal)) {
+            return showError("Please enter a valid email address (e.g. cansuyoruk@ankarabilim.edu.tr).");
+        }
 
         btn.disabled = true; btn.innerHTML = 'Sending...';
 
@@ -646,8 +766,14 @@
             });
 
             if (res.ok) {
-                alert("Password updated successfully! Please login.");
-                location.reload(); 
+               document.getElementById('forgot-form').style.opacity = '0.5';
+                document.getElementById('forgot-form').style.pointerEvents = 'none';
+                
+                showSuccess("Password updated successfully! Redirecting to login...");
+
+                setTimeout(() => {
+                    location.reload(); 
+                }, 3000);
             } else {
                 const err = await res.json();
                 showError(err.detail);
